@@ -2,30 +2,31 @@ import type { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { User } from "../models/user.model";
 
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "access-secret";
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ?? "refresh-secret";
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRES_IN = Number(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS ?? 15 * 60);
 const REFRESH_TOKEN_EXPIRES_IN = Number(
   process.env.REFRESH_TOKEN_EXPIRES_IN_SECONDS ?? 7 * 24 * 60 * 60,
 );
 const REFRESH_COOKIE_NAME = "refreshToken";
 
-const parseCookieValue = (cookieHeader: string | undefined, cookieName: string): string | null => {
-  if (!cookieHeader) return null;
-
-  const cookies = cookieHeader.split(";").map((part) => part.trim());
-  const match = cookies.find((cookie) => cookie.startsWith(`${cookieName}=`));
-  return match ? decodeURIComponent(match.split("=")[1] ?? "") : null;
+const mustGetEnv = (name: string, value: string | undefined): string => {
+  if (!value) {
+    throw new Error(`${name} is not configured`);
+  }
+  return value;
 };
 
 const signAccessToken = (userId: string, role: string): string => {
-  return jwt.sign({ sub: userId, role }, ACCESS_TOKEN_SECRET, {
+  const secret = mustGetEnv("ACCESS_TOKEN_SECRET", ACCESS_TOKEN_SECRET);
+  return jwt.sign({ sub: userId, role }, secret, {
     expiresIn: ACCESS_TOKEN_EXPIRES_IN,
   });
 };
 
 const signRefreshToken = (userId: string): string => {
-  return jwt.sign({ sub: userId }, REFRESH_TOKEN_SECRET, {
+  const secret = mustGetEnv("REFRESH_TOKEN_SECRET", REFRESH_TOKEN_SECRET);
+  return jwt.sign({ sub: userId }, secret, {
     expiresIn: REFRESH_TOKEN_EXPIRES_IN,
   });
 };
@@ -120,14 +121,16 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
 export const refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const incomingRefreshToken = parseCookieValue(req.headers.cookie, REFRESH_COOKIE_NAME);
+    const incomingRefreshToken =
+      (req.cookies as Record<string, string> | undefined)?.[REFRESH_COOKIE_NAME] ?? null;
 
     if (!incomingRefreshToken) {
       res.status(401).json({ message: "Refresh token missing" });
       return;
     }
 
-    const payload = jwt.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET) as { sub: string };
+    const secret = mustGetEnv("REFRESH_TOKEN_SECRET", REFRESH_TOKEN_SECRET);
+    const payload = jwt.verify(incomingRefreshToken, secret) as { sub: string };
     const user = await User.findById(payload.sub);
 
     if (!user || user.refreshToken !== incomingRefreshToken) {
@@ -144,7 +147,8 @@ export const refresh = async (req: Request, res: Response, next: NextFunction): 
 
 export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const incomingRefreshToken = parseCookieValue(req.headers.cookie, REFRESH_COOKIE_NAME);
+    const incomingRefreshToken =
+      (req.cookies as Record<string, string> | undefined)?.[REFRESH_COOKIE_NAME] ?? null;
 
     if (incomingRefreshToken) {
       await User.findOneAndUpdate(
