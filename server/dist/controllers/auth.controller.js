@@ -36,34 +36,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.refresh = exports.login = exports.register = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
 const user_model_1 = require("../models/user.model");
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "access-secret";
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ?? "refresh-secret";
-const ACCESS_TOKEN_EXPIRES_IN = Number(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS ?? 15 * 60);
-const REFRESH_TOKEN_EXPIRES_IN = Number(process.env.REFRESH_TOKEN_EXPIRES_IN_SECONDS ?? 7 * 24 * 60 * 60);
 const REFRESH_COOKIE_NAME = "refreshToken";
-const parseCookieValue = (cookieHeader, cookieName) => {
-    if (!cookieHeader)
-        return null;
-    const cookies = cookieHeader.split(";").map((part) => part.trim());
-    const match = cookies.find((cookie) => cookie.startsWith(`${cookieName}=`));
-    return match ? decodeURIComponent(match.split("=")[1] ?? "") : null;
+// Secrets and TTLs are read at call time, not module load time: this module is
+// imported through the app/route chain before dotenv has populated process.env,
+// so reading them eagerly would capture undefined.
+const mustGetEnv = (name) => {
+    const value = process.env[name];
+    if (!value) {
+        throw new Error(`${name} is not configured`);
+    }
+    return value;
 };
-const signAccessToken = (userId, role) => {
-    return jwt.sign({ sub: userId, role }, ACCESS_TOKEN_SECRET, {
-        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-    });
-};
-const signRefreshToken = (userId) => {
-    return jwt.sign({ sub: userId }, REFRESH_TOKEN_SECRET, {
-        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    });
-};
+const accessTokenTtl = () => Number(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS ?? 15 * 60);
+const refreshTokenTtl = () => Number(process.env.REFRESH_TOKEN_EXPIRES_IN_SECONDS ?? 7 * 24 * 60 * 60);
+const signAccessToken = (userId, role) => jwt.sign({ sub: userId, role }, mustGetEnv("ACCESS_TOKEN_SECRET"), {
+    expiresIn: accessTokenTtl(),
+});
+const signRefreshToken = (userId) => jwt.sign({ sub: userId }, mustGetEnv("REFRESH_TOKEN_SECRET"), {
+    expiresIn: refreshTokenTtl(),
+});
 const setRefreshCookie = (res, token) => {
     res.cookie(REFRESH_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: refreshTokenTtl() * 1000,
     });
 };
 const register = async (req, res, next) => {
@@ -84,9 +81,13 @@ const register = async (req, res, next) => {
             password,
             role,
         });
-        const token = signAccessToken(user.id, user.role);
+        const accessToken = signAccessToken(user.id, user.role);
+        const refreshToken = signRefreshToken(user.id);
+        user.refreshToken = refreshToken;
+        await user.save();
+        setRefreshCookie(res, refreshToken);
         res.status(201).json({
-            token,
+            accessToken,
             user: {
                 id: user.id,
                 name: user.name,
@@ -134,12 +135,13 @@ const login = async (req, res, next) => {
 exports.login = login;
 const refresh = async (req, res, next) => {
     try {
-        const incomingRefreshToken = parseCookieValue(req.headers.cookie, REFRESH_COOKIE_NAME);
+        const incomingRefreshToken = req.cookies?.[REFRESH_COOKIE_NAME] ?? null;
         if (!incomingRefreshToken) {
             res.status(401).json({ message: "Refresh token missing" });
             return;
         }
-        const payload = jwt.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
+        const secret = mustGetEnv("REFRESH_TOKEN_SECRET");
+        const payload = jwt.verify(incomingRefreshToken, secret);
         const user = await user_model_1.User.findById(payload.sub);
         if (!user || user.refreshToken !== incomingRefreshToken) {
             res.status(401).json({ message: "Invalid refresh token" });
@@ -155,7 +157,7 @@ const refresh = async (req, res, next) => {
 exports.refresh = refresh;
 const logout = async (req, res, next) => {
     try {
-        const incomingRefreshToken = parseCookieValue(req.headers.cookie, REFRESH_COOKIE_NAME);
+        const incomingRefreshToken = req.cookies?.[REFRESH_COOKIE_NAME] ?? null;
         if (incomingRefreshToken) {
             await user_model_1.User.findOneAndUpdate({ refreshToken: incomingRefreshToken }, { $unset: { refreshToken: 1 } });
         }
