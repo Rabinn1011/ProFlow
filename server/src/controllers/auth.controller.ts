@@ -2,41 +2,41 @@ import type { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { User } from "../models/user.model";
 
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-const ACCESS_TOKEN_EXPIRES_IN = Number(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS ?? 15 * 60);
-const REFRESH_TOKEN_EXPIRES_IN = Number(
-  process.env.REFRESH_TOKEN_EXPIRES_IN_SECONDS ?? 7 * 24 * 60 * 60,
-);
 const REFRESH_COOKIE_NAME = "refreshToken";
 
-const mustGetEnv = (name: string, value: string | undefined): string => {
+// Secrets and TTLs are read at call time, not module load time: this module is
+// imported through the app/route chain before dotenv has populated process.env,
+// so reading them eagerly would capture undefined.
+const mustGetEnv = (name: string): string => {
+  const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not configured`);
   }
   return value;
 };
 
-const signAccessToken = (userId: string, role: string): string => {
-  const secret = mustGetEnv("ACCESS_TOKEN_SECRET", ACCESS_TOKEN_SECRET);
-  return jwt.sign({ sub: userId, role }, secret, {
-    expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-  });
-};
+const accessTokenTtl = (): number =>
+  Number(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS ?? 15 * 60);
 
-const signRefreshToken = (userId: string): string => {
-  const secret = mustGetEnv("REFRESH_TOKEN_SECRET", REFRESH_TOKEN_SECRET);
-  return jwt.sign({ sub: userId }, secret, {
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+const refreshTokenTtl = (): number =>
+  Number(process.env.REFRESH_TOKEN_EXPIRES_IN_SECONDS ?? 7 * 24 * 60 * 60);
+
+const signAccessToken = (userId: string, role: string): string =>
+  jwt.sign({ sub: userId, role }, mustGetEnv("ACCESS_TOKEN_SECRET"), {
+    expiresIn: accessTokenTtl(),
   });
-};
+
+const signRefreshToken = (userId: string): string =>
+  jwt.sign({ sub: userId }, mustGetEnv("REFRESH_TOKEN_SECRET"), {
+    expiresIn: refreshTokenTtl(),
+  });
 
 const setRefreshCookie = (res: Response, token: string): void => {
   res.cookie(REFRESH_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: refreshTokenTtl() * 1000,
   });
 };
 
@@ -67,9 +67,16 @@ export const register = async (req: Request, res: Response, next: NextFunction):
       role,
     });
 
-    const token = signAccessToken(user.id, user.role);
+    const accessToken = signAccessToken(user.id, user.role);
+    const refreshToken = signRefreshToken(user.id);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    setRefreshCookie(res, refreshToken);
+
     res.status(201).json({
-      token,
+      accessToken,
       user: {
         id: user.id,
         name: user.name,
@@ -129,7 +136,7 @@ export const refresh = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
 
-    const secret = mustGetEnv("REFRESH_TOKEN_SECRET", REFRESH_TOKEN_SECRET);
+    const secret = mustGetEnv("REFRESH_TOKEN_SECRET");
     const payload = jwt.verify(incomingRefreshToken, secret) as { sub: string };
     const user = await User.findById(payload.sub);
 

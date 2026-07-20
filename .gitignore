@@ -15,6 +15,10 @@ dist-ssr
 .env
 .env.**
 server/.env
+
+# ...but the template belongs in the repo
+!.env.example
+!**/.env.example
 **/node_modules
 # Editor directories and files
 .vscode/*
