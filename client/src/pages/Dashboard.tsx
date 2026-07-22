@@ -43,41 +43,46 @@ export default function Dashboard() {
   }, [socket]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-6">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-300">{user ? `Signed in as ${user.email}` : ""}</p>
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+            <p className="text-sm text-slate-500">{user ? `Signed in as ${user.email}` : ""}</p>
+          </div>
+          <button
+            onClick={async () => {
+              await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
+              logoutStore();
+            }}
+            className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 active:scale-[0.98]"
+          >
+            Logout
+          </button>
         </div>
-        <button
-          onClick={async () => {
-            await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
-            logoutStore();
-          }}
-          className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-2 text-sm font-semibold text-fuchsia-200 hover:bg-fuchsia-500/15"
-        >
-          Logout
-        </button>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-4 px-4 pb-10">
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
         {error && (
-          <div className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-300">Workspaces</h2>
+        <section className="animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Workspaces</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {workspaces.map((w) => (
-              <div key={w.id} className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-                <div className="text-base font-semibold">{w.name}</div>
+              <div
+                key={w.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+              >
+                <div className="text-base font-semibold text-slate-900">{w.name}</div>
                 <div className="mt-1 text-xs text-slate-400">{w.id}</div>
               </div>
             ))}
             {workspaces.length === 0 && !error && (
-              <div className="text-sm text-slate-400">No workspaces yet. Create one via API for now.</div>
+              <div className="text-sm text-slate-500">No workspaces yet. Create one via API for now.</div>
             )}
           </div>
         </section>
