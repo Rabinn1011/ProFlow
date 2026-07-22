@@ -184,6 +184,13 @@ codebase — preserve it.
 React Query is installed for server state. Three libraries, one of them dead weight.
 **Decision: drop Redux, keep Zustand for client state and React Query for server state.**
 
+**Visual language (decided 2026-07-22): light theme, violet accent.** Page background
+`slate-50`; white surfaces with `border-slate-200` + `shadow-sm`; text `slate-900/800/500`;
+accent `violet-600` (hover `violet-700`), tinted chips `violet-50`/`violet-700`; errors
+`rose-50`/`rose-700`; motion limited to fades/lifts ≤0.35s (`animate-fade-in-up`,
+`animate-fade-in` in the Tailwind config). Every new page follows this — no dark surfaces,
+no gradients on buttons.
+
 **Tokens live in memory, not localStorage.** Access tokens are held in the Zustand store and
 vanish on refresh; the httpOnly refresh cookie re-establishes the session. This is the
 correct security posture — it is not a bug that a hard refresh briefly logs you out, though
@@ -194,20 +201,21 @@ a page reload dumps you to the login screen)_.
 
 ## 6. Known defects
 
-Found while auditing; fix before building new features.
-
-1. **Login is broken.** `auth.controller.ts` reads `process.env.ACCESS_TOKEN_SECRET` at
-   module top level, but `dotenv.config()` runs in `server.ts` *after* the import chain has
-   already evaluated the controller. The secrets capture `undefined` and every login throws.
-   The auth *middleware* reads env lazily inside the function, which is why it appears to
-   work there.
-2. **Register and login return different shapes.** Register responds `{ token }` and sets no
-   refresh cookie; login responds `{ accessToken }` and does. Any signup UI will fail to
-   establish a real session.
-3. **Unauthenticated sockets** — see 4.5.
-4. **No `server/.env`** — nothing runs until it exists. There is no `.env.example` to say
-   what belongs in it.
-5. **No silent refresh on app boot** — see Section 5.
+1. ~~**Login is broken** (env vars read before dotenv loaded)~~ — **fixed 2026-07-22.**
+   Secrets now read at call time; `config/env.ts` loads dotenv before the import chain.
+   Verified end-to-end against Atlas: register → login → refresh → protected route → logout.
+2. ~~**Register and login return different shapes**~~ — **fixed 2026-07-22.** Register now
+   mirrors login: `{ accessToken, user }` + refresh cookie.
+3. **Unauthenticated sockets** — see 4.5. Still open.
+4. ~~**No `.env` / `.env.example`**~~ — **fixed 2026-07-22.** `.env.example` committed;
+   real `.env` configured with Atlas (non-SRV URI — SRV DNS lookups fail on this machine).
+5. **No silent refresh on app boot** — still open. A hard refresh dumps you to login even
+   with a valid refresh cookie.
+6. **33 pre-existing TypeScript errors** in server controllers — `createdAt`/`updatedAt`
+   missing from the `I*Document` interfaces (Mongoose timestamps not typed). `dev` mode
+   transpiles anyway, but `npm run build` fails. Still open.
+7. **`server/dist/` is committed to git** despite being gitignored (tracked before the
+   ignore rule). Needs `git rm -r --cached server/dist`. Still open.
 
 ---
 
