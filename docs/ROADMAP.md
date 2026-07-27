@@ -13,10 +13,11 @@ testable, and has an explicit "done when". Work top to bottom; tick things off a
 Auth env bug fixed, register/login response unified, `.env.example` added, missing deps
 installed (`cookie-parser`, client `node_modules`), light violet theme established.
 
-Small leftovers, fold into any later increment:
-- ☐ `git rm -r --cached server/dist` (stale build output tracked in git)
-- ☐ Fix the 33 TS errors (add `createdAt`/`updatedAt` to the `I*Document` interfaces —
-  one small change per model file)
+Leftovers closed 2026-07-27:
+- ✅ `server/dist` untracked (`git rm -r --cached server/dist`)
+- ✅ TS errors fixed — `createdAt`/`updatedAt` (and `id` on `IWorkspaceDocument`) added to the
+  `I*Document` interfaces; `req.params` narrowed to `string` in the two controllers Express 5
+  types as `string | string[]`. `npm run build` passes clean.
 
 ---
 

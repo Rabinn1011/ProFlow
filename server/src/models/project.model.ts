@@ -7,7 +7,10 @@ export interface IProject {
   createdBy: Types.ObjectId;
 }
 
-export interface IProjectDocument extends IProject, Document {}
+export interface IProjectDocument extends IProject, Document {
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const projectSchema = new Schema<IProjectDocument>(
   {

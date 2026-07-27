@@ -42,7 +42,7 @@ export const createProject = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const workspaceId = req.params.workspaceId;
+    const { workspaceId } = req.params as { workspaceId?: string };
 
     if (!userId) {
       res.status(401).json({ message: "Not authenticated" });

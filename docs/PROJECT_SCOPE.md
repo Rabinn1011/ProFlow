@@ -211,11 +211,12 @@ a page reload dumps you to the login screen)_.
    real `.env` configured with Atlas (non-SRV URI — SRV DNS lookups fail on this machine).
 5. **No silent refresh on app boot** — still open. A hard refresh dumps you to login even
    with a valid refresh cookie.
-6. **33 pre-existing TypeScript errors** in server controllers — `createdAt`/`updatedAt`
-   missing from the `I*Document` interfaces (Mongoose timestamps not typed). `dev` mode
-   transpiles anyway, but `npm run build` fails. Still open.
-7. **`server/dist/` is committed to git** despite being gitignored (tracked before the
-   ignore rule). Needs `git rm -r --cached server/dist`. Still open.
+6. ~~**32 pre-existing TypeScript errors** in server controllers~~ — **fixed 2026-07-27.**
+   `createdAt`/`updatedAt` added to every `I*Document` interface, `id` added to
+   `IWorkspaceDocument`, and `req.params` cast to `string` where Express 5 types it as
+   `string | string[]`. `npm run build` now succeeds.
+7. ~~**`server/dist/` is committed to git**~~ — **fixed 2026-07-27.** Untracked via
+   `git rm -r --cached server/dist`; the gitignore rule now actually applies.
 
 ---
 
