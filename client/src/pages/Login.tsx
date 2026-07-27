@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { API_BASE_URL } from "../services/api";
 import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type LoginFormValues = {
   email: string;
@@ -157,6 +157,13 @@ export default function Login() {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Don't have an account?{" "}
+          <Link to="/register" className="font-semibold text-violet-700 transition hover:text-violet-800">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
