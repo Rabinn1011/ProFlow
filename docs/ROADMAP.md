@@ -21,17 +21,20 @@ Leftovers closed 2026-07-27:
 
 ---
 
-## Increment 1 — Signup page ☐
+## Increment 1 — Signup page ✅ (2026-07-27)
 
-The register endpoint works; nothing on the frontend reaches it.
+- `client/src/pages/Register.tsx` — name/email/password/confirm via react-hook-form
+  (`mode: "onBlur"`), matching Login's layout language; show/hide password toggle
+- Route `/register` outside `ProtectedRoute`; cross-links both ways via `<Link>`
+- Confirm-password matching with a `validate` rule reading `getValues("password")`
+- On success: `setAuth({ user, accessToken })` → `/app`; 409 "Email already in use"
+  surfaces in the error banner
 
-- `client/src/pages/Register.tsx` — name/email/password + confirm, same layout language
-  as Login (white card, violet accent, `animate-fade-in-up`)
-- Route `/register`, cross-links between Login ↔ Register
-- On success: store `{ user, accessToken }`, navigate to `/app`
+Verified end-to-end against a running server: fresh signup lands on the dashboard, a
+duplicate email shows the error.
 
-**Done when:** a brand-new user can go from empty browser → signed-up → dashboard without
-touching curl.
+Known rough edge, deliberately deferred: the confirm-password error doesn't re-validate
+when the *password* field is edited afterwards.
 
 ## Increment 2 — Session survives refresh ☐
 
