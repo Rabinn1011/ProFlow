@@ -63,7 +63,10 @@ export const createTask = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const { workspaceId, projectId } = req.params;
+    const { workspaceId, projectId } = req.params as {
+      workspaceId?: string;
+      projectId?: string;
+    };
 
     if (!userId) {
       res.status(401).json({ message: "Not authenticated" });

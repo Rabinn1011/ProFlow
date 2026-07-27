@@ -14,7 +14,10 @@ export interface ITask {
   dueDate?: Date | null;
 }
 
-export interface ITaskDocument extends ITask, Document {}
+export interface ITaskDocument extends ITask, Document {
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const taskSchema = new Schema<ITaskDocument>(
   {

@@ -14,7 +14,11 @@ export interface IWorkspace {
   members: IWorkspaceMember[];
 }
 
-export interface IWorkspaceDocument extends IWorkspace, Document {}
+export interface IWorkspaceDocument extends IWorkspace, Document {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const workspaceMemberSchema = new Schema<IWorkspaceMember>(
   {
