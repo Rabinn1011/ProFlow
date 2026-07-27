@@ -1,7 +1,9 @@
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, User, UserPlus, Mail, Lock } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import { API_BASE_URL } from "../services/api";
 
 type RegisterFormValues = {
   name: string;
@@ -10,8 +12,21 @@ type RegisterFormValues = {
   confirmPassword: string;
 };
 
+type RegisterResponse = {
+  accessToken: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+};
+
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const { setAuth } = useAuthStore();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -28,7 +43,40 @@ export default function Register() {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    console.log(data);
+    setApiError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: data.name.trim(),
+          email: data.email.trim().toLowerCase(),
+          password: data.password,
+        }),
+      });
+
+      const payload = (await response.json()) as RegisterResponse & { message?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.message ?? "Unable to register. Please try again.");
+      }
+
+      setAuth({
+        user: payload.user,
+        accessToken: payload.accessToken,
+      });
+      navigate("/app", { replace: true });
+    } catch (error) {
+      if (error instanceof Error) {
+        setApiError(error.message);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -160,6 +208,12 @@ export default function Register() {
               <p className="mt-1 text-xs text-rose-600">{errors.confirmPassword.message}</p>
             )}
           </div>
+
+          {apiError && (
+            <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {apiError}
+            </div>
+          )}
 
           <button
             type="submit"
