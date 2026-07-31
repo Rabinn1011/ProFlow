@@ -11,8 +11,10 @@ interface AuthState {
   user: AuthUser;
   accessToken: string | null;
   isAuthenticated: boolean;
+  isBootstrapping: boolean;
   setUser: (user: AuthUser) => void;
   setAuth: (payload: { user: NonNullable<AuthUser>; accessToken: string }) => void;
+  setBootstrapping: (value: boolean) => void;
   logout: () => void;
 }
 
@@ -20,6 +22,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
   isAuthenticated: false,
+  isBootstrapping: true,
   setUser: (user) =>
     set({
       user,
@@ -31,6 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken,
       isAuthenticated: true,
     }),
+  setBootstrapping: (value) => set({ isBootstrapping: value }),
   logout: () =>
     set({
       user: null,
