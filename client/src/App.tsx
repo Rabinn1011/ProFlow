@@ -3,8 +3,11 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Register from "./pages/Register";
+import { useAuthBootstrap } from "./hooks/useAuthBootstrap";
 
 function App() {
+  useAuthBootstrap();
+
   return (
     <BrowserRouter>
       <Routes>
