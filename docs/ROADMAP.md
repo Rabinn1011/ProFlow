@@ -36,15 +36,17 @@ duplicate email shows the error.
 Known rough edge, deliberately deferred: the confirm-password error doesn't re-validate
 when the *password* field is edited afterwards.
 
-## Increment 2 — Session survives refresh ☐
+## Increment 2 — Session survives refresh ✅ (2026-07-27)
 
-Currently F5 dumps a logged-in user back to `/login` even with a valid refresh cookie.
+- `useAuthBootstrap()` runs once on mount: `POST /auth/refresh` → `GET /users/me` with the
+  fresh token → `setAuth`. Uses plain `fetch`, not `authFetch` — the latter calls `logout()`
+  when the store has no user, which is exactly the cold-boot state.
+- `isBootstrapping` in the auth store (defaults `true`); `ProtectedRoute` checks it *before*
+  `isAuthenticated` and renders a spinner, so the guard never answers before the answer exists.
 
-- On app boot, call `POST /auth/refresh`; if it succeeds, fetch `GET /users/me` and
-  hydrate the auth store before rendering protected routes
-- A loading state while that happens (blank flash → brief spinner, not a login flicker)
+Verified in the browser: log in → F5 → still on the dashboard, no login flicker.
 
-**Done when:** log in, hit F5, still on the dashboard.
+Deferred: `/login` and `/register` don't bounce an already-authenticated user to `/app`.
 
 ## Increment 3 — Workspace CRUD in the UI ☐
 
