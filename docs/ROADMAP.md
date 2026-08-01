@@ -48,16 +48,18 @@ Verified in the browser: log in → F5 → still on the dashboard, no login flic
 
 Deferred: `/login` and `/register` don't bounce an already-authenticated user to `/app`.
 
-## Increment 3 — Workspace CRUD in the UI ☐
+## Increment 3 — Workspace CRUD in the UI ✅ (2026-07-27)
 
-Kill the "create one via API for now" placeholder.
+- `services/workspace.service.ts` (list/create/rename/delete over `authFetch`) +
+  `hooks/useWorkspaces.ts` wrapping them in React Query; mutations invalidate the
+  `["workspaces"]` key, so the list refetches itself. The raw `useState`/`useEffect` fetch
+  in `Dashboard` is gone.
+- Reusable `Modal` shell + `WorkspaceFormModal` (create/rename) and `ConfirmDialog` (delete).
+- Role gating from the workspace's own `members[]`: rename needs admin+, delete is
+  owner-only. `lib/workspaceRole.ts` mirrors the server's rank table — keep the two in sync.
+- Loading skeletons while the list is pending; per-dialog error banners.
 
-- "New workspace" button + modal on the dashboard
-- Rename (admin+) and delete (owner, with confirm) on each card
-- Move workspace fetching from raw `useState`/`useEffect` to React Query — it's installed
-  and unused; this is the moment it starts paying rent
-
-**Done when:** full workspace lifecycle from the UI, no curl.
+**Done when:** full workspace lifecycle from the UI, no curl. ✅
 
 ## Increment 4 — Projects page + routing ☐
 
