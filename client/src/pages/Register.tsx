@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, User, UserPlus, Mail, Lock } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { API_BASE_URL } from "../services/api";
 
@@ -26,6 +26,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState("");
   const { setAuth } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
   const {
     register,
@@ -78,6 +79,8 @@ export default function Register() {
       }
     }
   };
+
+  if (isAuthenticated) return <Navigate to="/app" replace />;
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 text-slate-800">

@@ -30,6 +30,14 @@ export async function listWorkspaces(): Promise<Workspace[]> {
   return payload.workspaces ?? [];
 }
 
+export async function getWorkspace(id: string): Promise<Workspace> {
+  const res = await authFetch(`/workspaces/${id}`);
+  if (!res.ok) throw await toError(res, "Failed to load workspace");
+
+  const payload = (await res.json()) as { workspace: Workspace };
+  return payload.workspace;
+}
+
 export async function createWorkspace(name: string): Promise<Workspace> {
   const res = await authFetch("/workspaces", {
     method: "POST",
