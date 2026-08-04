@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { API_BASE_URL } from "../services/api";
 import { useAuthStore } from "../store/authStore";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 type LoginFormValues = {
   email: string;
@@ -24,6 +24,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState("");
   const { setAuth } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
 
   const {
@@ -69,6 +70,8 @@ export default function Login() {
       setApiError(error instanceof Error ? error.message : "Unexpected error while signing in.");
     }
   };
+
+  if (isAuthenticated) return <Navigate to="/app" replace />;
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 text-slate-800">

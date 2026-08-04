@@ -2,6 +2,8 @@ import type { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { Workspace } from "../models/workspace.model";
+import { Project } from "../models/project.model";
+import { Task } from "../models/task.model";
 
 export const listWorkspaces = async (
   req: RequestWithUser,
@@ -148,7 +150,12 @@ export const deleteWorkspace = async (
       return;
     }
 
+    // Cascade: projects and tasks carry workspaceId, so deleting only the workspace
+    // would leave them orphaned and unreachable.
+    await Task.deleteMany({ workspaceId: workspace._id });
+    await Project.deleteMany({ workspaceId: workspace._id });
     await workspace.deleteOne();
+
     res.status(204).send();
   } catch (err) {
     next(err as Error);
