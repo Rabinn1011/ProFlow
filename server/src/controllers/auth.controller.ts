@@ -42,11 +42,12 @@ const setRefreshCookie = (res: Response, token: string): void => {
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, email, password, role = "member" } = req.body as {
+    // `role` is deliberately NOT read from the body: accepting it would let any client
+    // self-provision an admin account. New users are always members.
+    const { name, email, password } = req.body as {
       name?: string;
       email?: string;
       password?: string;
-      role?: "admin" | "member" | "viewer";
     };
 
     if (!name || !email || !password) {
@@ -64,7 +65,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
       name,
       email,
       password,
-      role,
+      role: "member",
     });
 
     const accessToken = signAccessToken(user.id, user.role);

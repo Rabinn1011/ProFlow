@@ -61,14 +61,26 @@ Deferred: `/login` and `/register` don't bounce an already-authenticated user to
 
 **Done when:** full workspace lifecycle from the UI, no curl. ✅
 
-## Increment 4 — Projects page + routing ☐
+## Increment 4 — Projects page + routing ✅ (2026-07-27)
 
-- Click a workspace → `/app/workspaces/:id` — project list page
-- Create / rename / delete projects (role-gated buttons)
-- Breadcrumb navigation (Workspaces / {name})
+- `/app/workspaces/:workspaceId` (project list) and
+  `/app/workspaces/:workspaceId/projects/:projectId` (board placeholder), both inside
+  `ProtectedRoute`
+- `services/project.service.ts` + `hooks/useProjects.ts` (React Query, key
+  `["workspaces", id, "projects"]`); `useWorkspace(id)` added for the breadcrumb name and role
+- Create/edit (member+) and delete (admin+) via `ProjectFormModal` and `ConfirmDialog`
+- `Breadcrumbs` + `AppHeader` extracted; `Dashboard` now uses `AppHeader` too
+
+Fixed along the way:
+- **Cascade deletes.** Deleting a workspace left its projects and tasks orphaned; deleting a
+  project left its tasks orphaned. Both now `deleteMany` their children first.
+- **Mass assignment on `role`** (scope §6 defect 8) — `register` no longer reads `role` from
+  the request body; new users are always `member`.
+- `/login` and `/register` now redirect an already-authenticated user to `/app` (deferred
+  from Increment 2).
 
 **Done when:** navigate workspace → project list → create a project → land on its (empty)
-board route.
+board route. ✅
 
 ## Increment 5 — The Kanban board (read + create) ☐
 

@@ -2,6 +2,7 @@ import type { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { Project } from "../models/project.model";
+import { Task } from "../models/task.model";
 
 export const listProjects = async (
   req: RequestWithUser,
@@ -196,7 +197,10 @@ export const deleteProject = async (
       return;
     }
 
+    // Cascade: tasks belong to the project and are unreachable once it is gone.
+    await Task.deleteMany({ projectId: project._id });
     await project.deleteOne();
+
     res.status(204).send();
   } catch (err) {
     next(err as Error);
