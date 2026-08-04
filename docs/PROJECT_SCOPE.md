@@ -217,7 +217,9 @@ a page reload dumps you to the login screen)_.
    `string | string[]`. `npm run build` now succeeds.
 7. ~~**`server/dist/` is committed to git**~~ — **fixed 2026-07-27.** Untracked via
    `git rm -r --cached server/dist`; the gitignore rule now actually applies.
-8. **Mass assignment on `role` in register** — found 2026-07-27. `auth.controller.ts`
+8. ~~**Mass assignment on `role` in register**~~ — **fixed 2026-07-27.** `register` no longer
+   destructures `role` from the body; users are always created as `member`. Original note:
+   `auth.controller.ts`
    destructures `role` straight off `req.body` (`role = "member"` is only a fallback), so
    any client can POST `/auth/register` with `role: "admin"` and self-provision a global
    admin. Currently latent: `requireRole` is defined in `auth.middleware.ts` but attached

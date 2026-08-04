@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { API_BASE_URL } from "../services/api";
 import { useSocket } from "../hooks/useSocket";
 import { useAuthStore } from "../store/authStore";
+import { AppHeader } from "../components/AppHeader";
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
@@ -25,7 +27,6 @@ const errorMessage = (error: unknown): string | undefined =>
 
 export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
-  const logoutStore = useAuthStore((s) => s.logout);
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const socketUrl = useMemo(() => API_BASE_URL.replace(/\/api\/?$/, ""), []);
@@ -57,23 +58,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
-            <p className="text-sm text-slate-500">{user ? `Signed in as ${user.email}` : ""}</p>
-          </div>
-          <button
-            onClick={async () => {
-              await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
-              logoutStore();
-            }}
-            className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 active:scale-[0.98]"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+      <AppHeader>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+        <p className="text-sm text-slate-500">{user ? `Signed in as ${user.email}` : ""}</p>
+      </AppHeader>
 
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
         {workspacesQuery.isError && (
@@ -113,10 +101,12 @@ export default function Dashboard() {
                     className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
+                      <Link to={`/app/workspaces/${workspace.id}`} className="min-w-0">
                         <div className="truncate text-base font-semibold text-slate-900">{workspace.name}</div>
-                        <div className="mt-1 text-xs text-slate-400">{workspace.id}</div>
-                      </div>
+                        <div className="mt-1 text-xs text-slate-400">
+                          {workspace.members.length} member{workspace.members.length === 1 ? "" : "s"}
+                        </div>
+                      </Link>
                       {role && (
                         <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700">
                           {role}
