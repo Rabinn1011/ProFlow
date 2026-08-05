@@ -82,16 +82,20 @@ Fixed along the way:
 **Done when:** navigate workspace → project list → create a project → land on its (empty)
 board route. ✅
 
-## Increment 5 — The Kanban board (read + create) ☐
+## Increment 5 — The Kanban board (read + create) ✅ (2026-07-27)
 
-The centerpiece, split in two. First: render it.
+- `ProjectBoard` renders three columns from `GET .../tasks`, grouped by status and sorted
+  by `position`; `services/task.service.ts` + `hooks/useTasks.ts` (key
+  `["workspaces", ws, "projects", p, "tasks"]`)
+- Inline "Add task" per column — Enter submits, Shift+Enter newlines, Escape cancels.
+  Title-only, because `createTask` accepts title/description/status but **not** `dueDate`.
+- `TaskDetailPanel` slide-over: edit title/description/status/due date, delete behind a
+  confirm. Save is disabled until the form is dirty.
+- `TaskCard` shows title + a due-date chip that turns rose when overdue
+  (`lib/taskDate.ts` handles the ISO ↔ `yyyy-MM-dd` conversion in local time).
+- All mutations are member+; viewers get a read-only board with no add/edit controls.
 
-- `/app/workspaces/:wsId/projects/:pId` — three columns (To Do / In Progress / Done)
-  from `GET .../tasks`, sorted by `position`
-- "Add task" per column; task card shows title + due date
-- Task detail panel (click card): edit title/description/status/due date, delete
-
-**Done when:** tasks created and edited entirely from the board UI.
+**Done when:** tasks created and edited entirely from the board UI. ✅
 
 ## Increment 6 — Drag & drop + real-time ☐
 
