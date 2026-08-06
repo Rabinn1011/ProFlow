@@ -3,6 +3,7 @@ import {
   createTask,
   deleteTask,
   listTasks,
+  moveTask,
   updateTask,
   type Task,
   type TaskInput,
@@ -39,6 +40,47 @@ export function useUpdateTask(workspaceId: string, projectId: string) {
       updateTask(workspaceId, projectId, taskId, input),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: tasksQueryKey(workspaceId, projectId) }),
+  });
+}
+
+// Optimistic: the card must land where it was dropped immediately. A board that waits
+// for the round trip feels broken, so we patch the cache first and roll back on failure.
+export function useMoveTask(workspaceId: string, projectId: string) {
+  const queryClient = useQueryClient();
+  const queryKey = tasksQueryKey(workspaceId, projectId);
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      ...input
+    }: {
+      taskId: string;
+      status: TaskStatus;
+      position: number;
+    }) => moveTask(workspaceId, projectId, taskId, input),
+
+    onMutate: async ({ taskId, status, position }) => {
+      // Stop an in-flight refetch from overwriting the optimistic state.
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Task[]>(queryKey);
+
+      queryClient.setQueryData<Task[]>(queryKey, (current) =>
+        current?.map((task) => (task.id === taskId ? { ...task, status, position } : task)),
+      );
+
+      return { previous };
+    },
+
+    onError: (_error, _variables, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+    },
+
+    // The server's copy is authoritative (it may have clamped position), so take it.
+    onSuccess: (task) => {
+      queryClient.setQueryData<Task[]>(queryKey, (current) =>
+        current?.map((existing) => (existing.id === task.id ? task : existing)),
+      );
+    },
   });
 }
 

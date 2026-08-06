@@ -1,20 +1,43 @@
+import { forwardRef } from "react";
 import { CalendarDays } from "lucide-react";
+import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import type { Task } from "../services/task.service";
 import { formatDueDate, isOverdue } from "../lib/taskDate";
 
 type TaskCardProps = {
   task: Task;
+  isDragging?: boolean;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
   onClick: () => void;
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
-export function TaskCard({ task, onClick }: TaskCardProps) {
+// A div rather than a button: the drag library owns mousedown on this element, and a
+// nested native button fights it for the event. Keyboard access is restored by hand.
+export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskCard(
+  { task, isDragging = false, dragHandleProps, onClick, ...rest },
+  ref,
+) {
   const overdue = isOverdue(task.dueDate, task.status);
 
   return (
-    <button
-      type="button"
+    <div
+      ref={ref}
+      {...rest}
+      {...dragHandleProps}
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      className={`w-full rounded-xl border bg-white p-3 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 ${
+        isDragging
+          ? "border-violet-400 shadow-lg"
+          : "border-slate-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+      }`}
     >
       <div className="text-sm font-medium text-slate-900">{task.title}</div>
 
@@ -28,6 +51,6 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           {formatDueDate(task.dueDate)}
         </span>
       )}
-    </button>
+    </div>
   );
-}
+});

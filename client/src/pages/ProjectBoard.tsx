@@ -1,9 +1,17 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { useAuthStore } from "../store/authStore";
 import { useWorkspace } from "../hooks/useWorkspaces";
 import { useProjects } from "../hooks/useProjects";
-import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from "../hooks/useTasks";
+import {
+  useCreateTask,
+  useDeleteTask,
+  useMoveTask,
+  useTasks,
+  useUpdateTask,
+} from "../hooks/useTasks";
+import { useProjectRealtime } from "../hooks/useProjectRealtime";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import type { Task, TaskStatus } from "../services/task.service";
 import { AppHeader } from "../components/AppHeader";
@@ -20,6 +28,20 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
 
 const errorMessage = (error: unknown): string | undefined =>
   error instanceof Error ? error.message : undefined;
+
+const POSITION_GAP = 1000;
+
+// Positions are sparse numbers, so a drop only needs a value between its new neighbours.
+// `ordered` must already exclude the task being moved.
+function computePosition(ordered: Task[], destinationIndex: number): number {
+  const before = ordered[destinationIndex - 1];
+  const after = ordered[destinationIndex];
+
+  if (!before && !after) return Date.now();
+  if (!before) return after.position - POSITION_GAP;
+  if (!after) return before.position + POSITION_GAP;
+  return (before.position + after.position) / 2;
+}
 
 export default function ProjectBoard() {
   const { workspaceId = "", projectId = "" } = useParams<{
@@ -38,6 +60,9 @@ export default function ProjectBoard() {
   const createMutation = useCreateTask(workspaceId, projectId);
   const updateMutation = useUpdateTask(workspaceId, projectId);
   const deleteMutation = useDeleteTask(workspaceId, projectId);
+  const moveMutation = useMoveTask(workspaceId, projectId);
+
+  useProjectRealtime(workspaceId, projectId);
 
   const role = workspaceQuery.data ? getMyRole(workspaceQuery.data, user?.id) : null;
   const canEdit = hasAtLeastRole(role, "member");
@@ -77,6 +102,26 @@ export default function ProjectBoard() {
     deleteMutation.mutate(task.id, { onSuccess: closePanel });
   };
 
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+
+    const sameSpot =
+      source.droppableId === destination.droppableId && source.index === destination.index;
+    if (sameSpot) return;
+
+    const status = destination.droppableId as TaskStatus;
+    const withoutMoved = tasks
+      .filter((task) => task.status === status && task.id !== draggableId)
+      .sort((a, b) => a.position - b.position);
+
+    moveMutation.mutate({
+      taskId: draggableId,
+      status,
+      position: computePosition(withoutMoved, destination.index),
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <AppHeader>
@@ -103,6 +148,11 @@ export default function ProjectBoard() {
             {errorMessage(createMutation.error)}
           </div>
         )}
+        {moveMutation.isError && (
+          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {errorMessage(moveMutation.error) ?? "Failed to move task"} — the card was put back.
+          </div>
+        )}
 
         {tasksQuery.isPending ? (
           <div className="grid gap-4 md:grid-cols-3">
@@ -114,20 +164,22 @@ export default function ProjectBoard() {
             ))}
           </div>
         ) : (
-          <div className="grid items-start gap-4 md:grid-cols-3">
-            {columns.map((column) => (
-              <BoardColumn
-                key={column.status}
-                label={column.label}
-                status={column.status}
-                tasks={column.tasks}
-                canEdit={canEdit}
-                isCreating={createMutation.isPending}
-                onSelectTask={(task) => setSelectedTaskId(task.id)}
-                onCreateTask={handleCreate}
-              />
-            ))}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="grid items-start gap-4 md:grid-cols-3">
+              {columns.map((column) => (
+                <BoardColumn
+                  key={column.status}
+                  label={column.label}
+                  status={column.status}
+                  tasks={column.tasks}
+                  canEdit={canEdit}
+                  isCreating={createMutation.isPending}
+                  onSelectTask={(task) => setSelectedTaskId(task.id)}
+                  onCreateTask={handleCreate}
+                />
+              ))}
+            </div>
+          </DragDropContext>
         )}
       </main>
 
