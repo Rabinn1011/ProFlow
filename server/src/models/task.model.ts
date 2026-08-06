@@ -15,6 +15,7 @@ export interface ITask {
 }
 
 export interface ITaskDocument extends ITask, Document {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 }

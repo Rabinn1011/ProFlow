@@ -2,12 +2,28 @@ import type { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { Project } from "../models/project.model";
-import { Task, type TaskStatus } from "../models/task.model";
+import { Task, type ITaskDocument, type TaskStatus } from "../models/task.model";
+import { emitToProject } from "../lib/realtime";
 
 const normalizeStatus = (value: unknown): TaskStatus | null => {
   if (value === "todo" || value === "in_progress" || value === "done") return value;
   return null;
 };
+
+const toTaskDto = (task: ITaskDocument) => ({
+  id: task.id,
+  workspaceId: task.workspaceId,
+  projectId: task.projectId,
+  title: task.title,
+  description: task.description,
+  status: task.status,
+  position: task.position,
+  assigneeId: task.assigneeId,
+  dueDate: task.dueDate,
+  createdBy: task.createdBy,
+  createdAt: task.createdAt,
+  updatedAt: task.updatedAt,
+});
 
 export const listTasks = async (
   req: RequestWithUser,
@@ -35,22 +51,7 @@ export const listTasks = async (
         "_id workspaceId projectId title description status position assigneeId dueDate createdBy createdAt updatedAt",
       );
 
-    res.status(200).json({
-      tasks: tasks.map((t) => ({
-        id: t.id,
-        workspaceId: t.workspaceId,
-        projectId: t.projectId,
-        title: t.title,
-        description: t.description,
-        status: t.status,
-        position: t.position,
-        assigneeId: t.assigneeId,
-        dueDate: t.dueDate,
-        createdBy: t.createdBy,
-        createdAt: t.createdAt,
-        updatedAt: t.updatedAt,
-      })),
-    });
+    res.status(200).json({ tasks: tasks.map(toTaskDto) });
   } catch (err) {
     next(err as Error);
   }
@@ -110,22 +111,10 @@ export const createTask = async (
       createdBy: new mongoose.Types.ObjectId(userId),
     });
 
-    res.status(201).json({
-      task: {
-        id: task.id,
-        workspaceId: task.workspaceId,
-        projectId: task.projectId,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        position: task.position,
-        assigneeId: task.assigneeId,
-        dueDate: task.dueDate,
-        createdBy: task.createdBy,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-      },
-    });
+    const dto = toTaskDto(task);
+    emitToProject(req, projectId, "task:created", { task: dto });
+
+    res.status(201).json({ task: dto });
   } catch (err) {
     next(err as Error);
   }
@@ -137,7 +126,11 @@ export const updateTask = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { workspaceId, projectId, taskId } = req.params;
+    const { workspaceId, projectId, taskId } = req.params as {
+      workspaceId?: string;
+      projectId?: string;
+      taskId?: string;
+    };
     if (!workspaceId || !mongoose.isValidObjectId(workspaceId)) {
       res.status(400).json({ message: "Invalid workspace id" });
       return;
@@ -204,22 +197,10 @@ export const updateTask = async (
 
     await task.save();
 
-    res.status(200).json({
-      task: {
-        id: task.id,
-        workspaceId: task.workspaceId,
-        projectId: task.projectId,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        position: task.position,
-        assigneeId: task.assigneeId,
-        dueDate: task.dueDate,
-        createdBy: task.createdBy,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-      },
-    });
+    const dto = toTaskDto(task);
+    emitToProject(req, projectId, "task:updated", { task: dto });
+
+    res.status(200).json({ task: dto });
   } catch (err) {
     next(err as Error);
   }
@@ -231,7 +212,11 @@ export const deleteTask = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { workspaceId, projectId, taskId } = req.params;
+    const { workspaceId, projectId, taskId } = req.params as {
+      workspaceId?: string;
+      projectId?: string;
+      taskId?: string;
+    };
     if (!workspaceId || !mongoose.isValidObjectId(workspaceId)) {
       res.status(400).json({ message: "Invalid workspace id" });
       return;
@@ -252,6 +237,8 @@ export const deleteTask = async (
     }
 
     await task.deleteOne();
+    emitToProject(req, projectId, "task:deleted", { taskId, projectId });
+
     res.status(204).send();
   } catch (err) {
     next(err as Error);
@@ -264,7 +251,11 @@ export const moveTask = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { workspaceId, projectId, taskId } = req.params;
+    const { workspaceId, projectId, taskId } = req.params as {
+      workspaceId?: string;
+      projectId?: string;
+      taskId?: string;
+    };
     if (!workspaceId || !mongoose.isValidObjectId(workspaceId)) {
       res.status(400).json({ message: "Invalid workspace id" });
       return;
@@ -299,36 +290,11 @@ export const moveTask = async (
     task.position = position;
     await task.save();
 
-    try {
-      const io = req.app.get("io");
-      io.to(`project:${projectId}`).emit("task:moved", {
-        taskId: task.id,
-        projectId,
-        workspaceId,
-        status: task.status,
-        position: task.position,
-        updatedAt: task.updatedAt,
-      });
-    } catch {
-      // ignore if io not configured
-    }
+    const dto = toTaskDto(task);
+    // Full task, same shape as task:updated — clients patch both events identically.
+    emitToProject(req, projectId, "task:moved", { task: dto });
 
-    res.status(200).json({
-      task: {
-        id: task.id,
-        workspaceId: task.workspaceId,
-        projectId: task.projectId,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        position: task.position,
-        assigneeId: task.assigneeId,
-        dueDate: task.dueDate,
-        createdBy: task.createdBy,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-      },
-    });
+    res.status(200).json({ task: dto });
   } catch (err) {
     next(err as Error);
   }
