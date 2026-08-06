@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { API_BASE_URL } from "../services/api";
-import { useSocket } from "../hooks/useSocket";
 import { useAuthStore } from "../store/authStore";
 import { AppHeader } from "../components/AppHeader";
 import {
@@ -29,23 +27,10 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  const socketUrl = useMemo(() => API_BASE_URL.replace(/\/api\/?$/, ""), []);
-  const socket = useSocket(socketUrl);
-
   const workspacesQuery = useWorkspaces();
   const createMutation = useCreateWorkspace();
   const renameMutation = useRenameWorkspace();
   const deleteMutation = useDeleteWorkspace();
-
-  useEffect(() => {
-    const onTaskMoved = () => {
-      // placeholder: later we'll update react-query caches for kanban
-    };
-    socket.on("task:moved", onTaskMoved);
-    return () => {
-      socket.off("task:moved", onTaskMoved);
-    };
-  }, [socket]);
 
   const closeDialog = () => {
     setDialog(null);

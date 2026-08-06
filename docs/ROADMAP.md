@@ -97,19 +97,24 @@ board route. ✅
 
 **Done when:** tasks created and edited entirely from the board UI. ✅
 
-## Increment 6 — Drag & drop + real-time ☐
+## Increment 6 — Drag & drop + real-time ✅ (2026-07-27)
 
-Second half: make it move, together.
-
-- Install `@hello-pangea/dnd`; drag between/within columns → `POST .../move` with
-  optimistic update + rollback on failure
-- Broadcast `task:created/updated/deleted` from the server (only `task:moved` exists)
-- Client joins `project:<id>` room; socket events patch the React Query cache in place
-- **Authenticate the socket handshake with the access token** — closes the open security
-  gap (scope §4.5)
+- `@hello-pangea/dnd` wired into the board; drag between and within columns.
+  `useMoveTask` is optimistic (`onMutate` snapshots + patches, `onError` rolls back,
+  `onSuccess` takes the server's copy) and new positions are midpoints between neighbours
+  (`POSITION_GAP` 1000 at the ends).
+- Server broadcasts `task:created` / `task:updated` / `task:deleted`; `task:moved` now
+  carries the full task so clients patch all four events identically.
+  `lib/realtime.ts` centralises the best-effort emit; `toTaskDto` kills the six copies
+  of the response shape.
+- `useProjectRealtime` joins `project:<id>`, patches the React Query cache via
+  `setQueryData` (no refetch), rejoins on reconnect, and leaves on unmount.
+- **Socket handshake authenticated** (scope §4.5 closed): `io.use` verifies the access
+  token from `handshake.auth`, and `project:join` additionally checks workspace membership
+  before joining the room — auth alone would still let any user watch any project.
 
 **Done when:** two browser windows, same board — drag in one, it moves in the other,
-and an anonymous socket client can't join the room.
+and an anonymous socket client can't join the room. ✅
 
 ## Increment 7 — Member invites ☐
 

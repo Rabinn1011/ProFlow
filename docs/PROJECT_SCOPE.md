@@ -206,7 +206,8 @@ a page reload dumps you to the login screen)_.
    Verified end-to-end against Atlas: register → login → refresh → protected route → logout.
 2. ~~**Register and login return different shapes**~~ — **fixed 2026-07-22.** Register now
    mirrors login: `{ accessToken, user }` + refresh cookie.
-3. **Unauthenticated sockets** — see 4.5. Still open.
+3. ~~**Unauthenticated sockets**~~ — **fixed 2026-07-27.** `io.use` verifies the access
+   token from the handshake, and `project:join` checks workspace membership before joining.
 4. ~~**No `.env` / `.env.example`**~~ — **fixed 2026-07-22.** `.env.example` committed;
    real `.env` configured with Atlas (non-SRV URI — SRV DNS lookups fail on this machine).
 5. **No silent refresh on app boot** — still open. A hard refresh dumps you to login even
