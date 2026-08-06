@@ -72,6 +72,22 @@ export async function updateTask(
   return payload.task;
 }
 
+export async function moveTask(
+  workspaceId: string,
+  projectId: string,
+  taskId: string,
+  input: { status: TaskStatus; position: number },
+): Promise<Task> {
+  const res = await authFetch(`${tasksPath(workspaceId, projectId)}/${taskId}/move`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw await toError(res, "Failed to move task");
+
+  const payload = (await res.json()) as { task: Task };
+  return payload.task;
+}
+
 export async function deleteTask(
   workspaceId: string,
   projectId: string,

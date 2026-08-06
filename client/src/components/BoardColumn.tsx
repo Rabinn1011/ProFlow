@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { Draggable, Droppable } from "@hello-pangea/dnd";
 import type { Task, TaskStatus } from "../services/task.service";
 import { TaskCard } from "./TaskCard";
 
@@ -43,15 +44,42 @@ export function BoardColumn({
         </span>
       </div>
 
-      <div className="space-y-2">
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onClick={() => onSelectTask(task)} />
-        ))}
+      <Droppable droppableId={status}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`min-h-[3rem] space-y-2 rounded-xl transition ${
+              snapshot.isDraggingOver ? "bg-violet-50/70" : ""
+            }`}
+          >
+            {tasks.map((task, index) => (
+              <Draggable
+                key={task.id}
+                draggableId={task.id}
+                index={index}
+                isDragDisabled={!canEdit}
+              >
+                {(dragProvided, dragSnapshot) => (
+                  <TaskCard
+                    ref={dragProvided.innerRef}
+                    {...dragProvided.draggableProps}
+                    dragHandleProps={dragProvided.dragHandleProps}
+                    isDragging={dragSnapshot.isDragging}
+                    task={task}
+                    onClick={() => onSelectTask(task)}
+                  />
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
 
-        {tasks.length === 0 && !isAdding && (
-          <p className="px-1 py-3 text-xs text-slate-400">Nothing here yet.</p>
+            {tasks.length === 0 && !isAdding && !snapshot.isDraggingOver && (
+              <p className="px-1 py-3 text-xs text-slate-400">Nothing here yet.</p>
+            )}
+          </div>
         )}
-      </div>
+      </Droppable>
 
       {canEdit && (
         <div className="mt-2">
