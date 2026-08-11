@@ -31,11 +31,22 @@ const signRefreshToken = (userId: string): string =>
     expiresIn: refreshTokenTtl(),
   });
 
+const isProduction = (): boolean => process.env.NODE_ENV === "production";
+
+// In production the client and API live on different domains, so the browser only sends
+// this cookie with SameSite=None — which it accepts only alongside Secure. Locally both
+// are on localhost, where Strict works and Secure would drop the cookie over plain http.
+// Set and clear must use identical options or clearCookie silently does nothing.
+const refreshCookieOptions = () =>
+  ({
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: isProduction() ? "none" : "strict",
+  }) as const;
+
 const setRefreshCookie = (res: Response, token: string): void => {
   res.cookie(REFRESH_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    ...refreshCookieOptions(),
     maxAge: refreshTokenTtl() * 1000,
   });
 };
@@ -165,11 +176,7 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
       );
     }
 
-    res.clearCookie(REFRESH_COOKIE_NAME, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
+    res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
 
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {

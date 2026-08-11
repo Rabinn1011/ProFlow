@@ -10,6 +10,12 @@ import { notFoundHandler } from "./middleware/not-found.middleware";
 
 const app = express();
 
+// Hosts like Render/Railway terminate TLS at a proxy; without this Express sees plain
+// http and req.protocol / req.ip are wrong.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN?.split(",").map((s) => s.trim()) ?? true,
