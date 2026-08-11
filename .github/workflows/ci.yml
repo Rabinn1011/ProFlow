@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server (typecheck + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      # ci, not install: installs exactly what the lockfile pins and fails if the
+      # lockfile and package.json disagree.
+      - run: npm ci
+
+      - run: npm run build
+
+  client:
+    name: Client (typecheck + lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      # `npm run build` is `tsc -b && vite build`, so this typechecks too.
+      # VITE_API_BASE_URL is unset here on purpose: the source has a localhost fallback,
+      # and the real value is injected by whoever builds for production.
+      - run: npm run build
