@@ -116,26 +116,48 @@ board route. ✅
 **Done when:** two browser windows, same board — drag in one, it moves in the other,
 and an anonymous socket client can't join the room. ✅
 
-## Increment 7 — Member invites ☐
+## Increment 7 — Member invites ✅ (2026-07-27)
 
-Until this, the product is single-player and RBAC is theoretical (scope §4.2).
-
-- Backend: `POST/PATCH/DELETE /workspaces/:id/members` (+ guard rails: last owner
-  protected, no promoting above your own rank; invite by email, existing users only)
-- Frontend: members panel in the workspace — list, invite, change role, remove
-- Viewer role actually enforced in the UI (no drag, no edit buttons)
+- Backend `controllers/members.controller.ts` + routes:
+  `GET` (member+), `POST` / `PATCH` / `DELETE /workspaces/:id/members` (admin+).
+  Members are returned joined with name/email — `members[]` only stores ids.
+- Guard rails, all verified against a running server:
+  last owner cannot be demoted or removed; nobody can assign a role above their own rank;
+  owners manage anyone, others only ranks strictly below their own (which also blocks
+  self-promotion); duplicate invites 409; unknown email 404; non-members 403.
+  `lib/workspaceRoles.ts` holds the rank table, now shared with the access middleware.
+- Removing a member unassigns their tasks, so `assigneeId` never points at someone who
+  can no longer see the workspace.
+- Frontend `MembersPanel` on the workspace page: list, invite by email with a role, change
+  role inline, remove behind a confirm. Role options are capped at the caller's own rank.
 
 **Done when:** second account invited as viewer sees the board read-only; as member,
 can move tasks and it syncs live.
 
-## Increment 8 — Analytics ☐
+## Increment 8 — Analytics ✅ (2026-07-27)
 
-- Aggregation endpoints (scope §4.7): status counts, completions over time, per-member
-  throughput, overdue
-- `/app/workspaces/:id/analytics` with Recharts, owner/admin only
+- **`completedAt` added to `Task`** — set on transition into `done`, cleared on the way
+  out, via one `applyStatus()` helper shared by create/update/move. `updatedAt` could not
+  stand in: any edit bumps it, which would mis-date completions. Existing done tasks were
+  backfilled from `updatedAt` (`server/scripts/backfill-completed-at.mjs`, dry-run by
+  default) — pre-2026-07-27 completion dates are therefore approximate.
+- `GET /workspaces/:id/analytics?days=` (admin+), four real aggregation pipelines run in
+  parallel: status `$group`; per-project double `$group` + `$lookup` on projects;
+  completions bucketed with `$dateToString` (UTC); throughput `$group` on `assigneeId`
+  + `$lookup` on users. Missing days are zero-filled server-side so the chart axis is
+  continuous. Index added on `{ workspaceId, completedAt }`.
+- `/app/workspaces/:id/analytics` with Recharts: stat tiles, completions line, stacked
+  per-project bar, throughput bar. Palette validated with the dataviz checker (worst
+  adjacent CVD ΔE 23.2 deutan); amber is below 3:1 contrast so its marks carry labels.
+- Verified with a scripted fixture: 13/13 assertions on totals, per-project splits,
+  day buckets, throughput grouping, and the viewer-denied 403.
 
 **Done when:** charts render real numbers from the aggregation pipeline (verifiable
-against the board).
+against the board). ✅
+
+Known limitation: throughput is attributed by **assignee**, not by who moved the task —
+there is no audit trail of status changes. Unassigned completions group under
+"Unassigned".
 
 ## Increment 9 — Chat ☐
 
