@@ -2,13 +2,7 @@ import type { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { Workspace, type WorkspaceRole } from "../models/workspace.model";
-
-const roleRank: Record<WorkspaceRole, number> = {
-  owner: 4,
-  admin: 3,
-  member: 2,
-  viewer: 1,
-};
+import { roleRank } from "../lib/workspaceRoles";
 
 export const requireWorkspaceMember = async (
   req: RequestWithUser,

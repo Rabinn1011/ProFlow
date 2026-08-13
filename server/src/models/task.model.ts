@@ -12,6 +12,9 @@ export interface ITask {
   createdBy: Types.ObjectId;
   assigneeId?: Types.ObjectId | null;
   dueDate?: Date | null;
+  // Set when status becomes "done", cleared when it moves back out. updatedAt cannot
+  // stand in for this: any edit bumps it, which would silently mis-date completions.
+  completedAt?: Date | null;
 }
 
 export interface ITaskDocument extends ITask, Document {
@@ -31,11 +34,14 @@ const taskSchema = new Schema<ITaskDocument>(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     assigneeId: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
     dueDate: { type: Date, default: null },
+    completedAt: { type: Date, default: null, index: true },
   },
   { timestamps: true },
 );
 
 taskSchema.index({ workspaceId: 1, projectId: 1, status: 1, position: 1 });
+// Backs the completions-over-time aggregation.
+taskSchema.index({ workspaceId: 1, completedAt: 1 });
 
 export const Task = model<ITaskDocument>("Task", taskSchema);
 
