@@ -10,6 +10,14 @@ const normalizeStatus = (value: unknown): TaskStatus | null => {
   return null;
 };
 
+// Single place that owns the completedAt side effect, so every status transition
+// (create, update, move) records completions the same way.
+const applyStatus = (task: ITaskDocument, nextStatus: TaskStatus): void => {
+  if (task.status === nextStatus) return;
+  task.status = nextStatus;
+  task.completedAt = nextStatus === "done" ? new Date() : null;
+};
+
 const toTaskDto = (task: ITaskDocument) => ({
   id: task.id,
   workspaceId: task.workspaceId,
@@ -20,6 +28,7 @@ const toTaskDto = (task: ITaskDocument) => ({
   position: task.position,
   assigneeId: task.assigneeId,
   dueDate: task.dueDate,
+  completedAt: task.completedAt ?? null,
   createdBy: task.createdBy,
   createdAt: task.createdAt,
   updatedAt: task.updatedAt,
@@ -108,6 +117,7 @@ export const createTask = async (
       description: description?.trim() ? description.trim() : null,
       status: normalizedStatus,
       position: typeof position === "number" ? position : Date.now(),
+      completedAt: normalizedStatus === "done" ? new Date() : null,
       createdBy: new mongoose.Types.ObjectId(userId),
     });
 
@@ -174,7 +184,7 @@ export const updateTask = async (
         res.status(400).json({ message: "Invalid status" });
         return;
       }
-      task.status = normalized;
+      applyStatus(task, normalized);
     }
     if (typeof assigneeId !== "undefined") {
       if (assigneeId === null) task.assigneeId = null;
@@ -286,7 +296,7 @@ export const moveTask = async (
       return;
     }
 
-    task.status = normalized;
+    applyStatus(task, normalized);
     task.position = position;
     await task.save();
 

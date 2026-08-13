@@ -16,6 +16,13 @@ import {
   updateProject,
 } from "../controllers/projects.controller";
 import { createTask, deleteTask, listTasks, moveTask, updateTask } from "../controllers/tasks.controller";
+import {
+  addMember,
+  listMembers,
+  removeMember,
+  updateMemberRole,
+} from "../controllers/members.controller";
+import { getWorkspaceAnalytics } from "../controllers/analytics.controller";
 
 const workspacesRouter = Router();
 
@@ -30,6 +37,37 @@ workspacesRouter.delete(
   requireWorkspaceMember,
   requireWorkspaceRole("owner"),
   deleteWorkspace,
+);
+
+workspacesRouter.get(
+  "/:id/analytics",
+  requireAuth,
+  requireWorkspaceMember,
+  requireWorkspaceRole("admin"),
+  getWorkspaceAnalytics,
+);
+
+workspacesRouter.get("/:id/members", requireAuth, requireWorkspaceMember, listMembers);
+workspacesRouter.post(
+  "/:id/members",
+  requireAuth,
+  requireWorkspaceMember,
+  requireWorkspaceRole("admin"),
+  addMember,
+);
+workspacesRouter.patch(
+  "/:id/members/:userId",
+  requireAuth,
+  requireWorkspaceMember,
+  requireWorkspaceRole("admin"),
+  updateMemberRole,
+);
+workspacesRouter.delete(
+  "/:id/members/:userId",
+  requireAuth,
+  requireWorkspaceMember,
+  requireWorkspaceRole("admin"),
+  removeMember,
 );
 
 workspacesRouter.get(

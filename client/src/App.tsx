@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import WorkspaceProjects from "./pages/WorkspaceProjects";
 import ProjectBoard from "./pages/ProjectBoard";
+import WorkspaceAnalytics from "./pages/WorkspaceAnalytics";
 import { useAuthBootstrap } from "./hooks/useAuthBootstrap";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<Dashboard />} />
           <Route path="/app/workspaces/:workspaceId" element={<WorkspaceProjects />} />
+          <Route path="/app/workspaces/:workspaceId/analytics" element={<WorkspaceAnalytics />} />
           <Route
             path="/app/workspaces/:workspaceId/projects/:projectId"
             element={<ProjectBoard />}
