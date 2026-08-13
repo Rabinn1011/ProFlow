@@ -81,9 +81,11 @@ post-v1 unless it becomes a portfolio talking point worth the time.
 
 ### 4.2 Workspaces & membership — 🟡 partly built
 
-Built: create, list, read, update, delete, all role-gated.
+Built: create, list, read, update, delete, all role-gated. **Invites shipped 2026-07-27**
+(Increment 7) — the gap described below is closed; the design decision was resolved as
+"existing users only, no pending invites."
 
-**Missing, and this is the highest-value gap:** there is **no way to invite anyone.**
+**Was missing, and was the highest-value gap:** there was **no way to invite anyone.**
 No invite endpoint exists, so a workspace can only ever contain its creator. "Invite team
 members with different roles" is half the product's premise, and the entire RBAC system
 is currently theoretical because no workspace can have a second member.

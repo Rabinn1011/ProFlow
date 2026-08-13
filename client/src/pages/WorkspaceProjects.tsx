@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { BarChart3, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useWorkspace } from "../hooks/useWorkspaces";
 import {
@@ -15,6 +15,7 @@ import { AppHeader } from "../components/AppHeader";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { ProjectFormModal } from "../components/ProjectFormModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { MembersPanel } from "../components/MembersPanel";
 
 type DialogState =
   | { mode: "create" }
@@ -57,6 +58,15 @@ export default function WorkspaceProjects() {
         <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
           {workspaceName}
         </h1>
+        {canDelete && (
+          <Link
+            to={`/app/workspaces/${workspaceId}/analytics`}
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
+          >
+            <BarChart3 size={16} />
+            View analytics
+          </Link>
+        )}
       </AppHeader>
 
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
@@ -144,6 +154,8 @@ export default function WorkspaceProjects() {
             )}
           </div>
         </section>
+
+        <MembersPanel workspaceId={workspaceId} myRole={role} />
       </main>
 
       {dialog?.mode === "create" && (
