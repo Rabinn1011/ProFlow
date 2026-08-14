@@ -1,0 +1,10 @@
+node_modules
+dist
+tests
+scripts
+.env
+.env.*
+!.env.example
+npm-debug.log*
+jest.config.js
+tsconfig.test.json

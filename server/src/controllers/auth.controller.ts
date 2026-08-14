@@ -33,15 +33,21 @@ const signRefreshToken = (userId: string): string =>
 
 const isProduction = (): boolean => process.env.NODE_ENV === "production";
 
-// In production the client and API live on different domains, so the browser only sends
-// this cookie with SameSite=None — which it accepts only alongside Secure. Locally both
-// are on localhost, where Strict works and Secure would drop the cookie over plain http.
+// Whether the browser will treat the client and this API as different sites. That is a
+// deployment fact, not a NODE_ENV fact: a docker-compose stack runs "production" with
+// both halves on localhost (same site), while a Vercel + Render split is cross-site.
+// Cross-site cookies require SameSite=None, which browsers accept only with Secure.
+const isCrossSite = (): boolean =>
+  typeof process.env.COOKIE_CROSS_SITE === "string"
+    ? process.env.COOKIE_CROSS_SITE === "true"
+    : isProduction();
+
 // Set and clear must use identical options or clearCookie silently does nothing.
 const refreshCookieOptions = () =>
   ({
     httpOnly: true,
-    secure: isProduction(),
-    sameSite: isProduction() ? "none" : "strict",
+    secure: isProduction() || isCrossSite(),
+    sameSite: isCrossSite() ? "none" : "strict",
   }) as const;
 
 const setRefreshCookie = (res: Response, token: string): void => {
