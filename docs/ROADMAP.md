@@ -167,15 +167,26 @@ there is no audit trail of status changes. Unassigned completions group under
 
 **Done when:** two accounts hold a conversation that survives a refresh.
 
-## Increment 10 — Hardening & ship ☐
+## Increment 10 — Hardening & ship ◐ (2026-07-27)
 
-- Jest + Supertest: auth flow, RBAC middleware, invite guard rails at minimum
-- Dockerfile + compose (server, client, local Mongo)
-- GitHub Actions: typecheck + tests on push
-- README rewritten to match reality (screenshots, setup, features)
+- ✅ **Jest + Supertest, 44 tests** against `mongodb-memory-server` (no external DB, so CI
+  needs no service container). `tsconfig.test.json` exists because the base config scopes
+  to `src` only. Suites: auth flow (incl. the ignored-`role` regression and logout
+  revoking a refresh token), RBAC gating per role, membership guard rails, cascade
+  deletes, analytics aggregations, and the `completedAt` lifecycle.
+- ✅ **CI extended** to run `npm test` on the server job.
+- ✅ **README rewritten** — the old one promised social login, file uploads and
+  Multer/Cloudinary, none of which exist or are planned.
+- ✅ **`COOKIE_CROSS_SITE`** added: cookie SameSite mode is now a deployment fact, not
+  inferred from `NODE_ENV`. Compose runs "production" with both halves on localhost
+  (same-site), which the old `NODE_ENV`-only logic would have got wrong.
+- ◐ **Docker written but UNVERIFIED** — `server/Dockerfile` (multi-stage, non-root),
+  `client/Dockerfile` (build → nginx with SPA fallback + asset caching),
+  `docker-compose.yml` (mongo with healthcheck, server, client). Docker is not installed
+  on the dev machine, so none of it has been built or run yet.
 
 **Done when:** `docker compose up` on a clean machine gives a working ProFlow;
-CI is green.
+CI is green. — *tests and CI done; compose still needs a real run.*
 
 ---
 

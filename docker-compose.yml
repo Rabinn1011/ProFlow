@@ -1,0 +1,51 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/proflow
+      # The browser talks to the client on :8080, so that is the origin to allow.
+      CORS_ORIGIN: http://localhost:8080
+      # Both halves are on localhost here, so the refresh cookie stays SameSite=Strict.
+      # Set true when the client is served from a different domain than this API.
+      COOKIE_CROSS_SITE: "false"
+      # Local-only defaults. Generate real values for anything reachable from outside:
+      #   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-dev-only-access-secret-change-me}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-only-refresh-secret-change-me}
+      ACCESS_TOKEN_EXPIRES_IN_SECONDS: 900
+      REFRESH_TOKEN_EXPIRES_IN_SECONDS: 604800
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      args:
+        # Baked into the bundle at build time — changing it needs a rebuild.
+        VITE_API_BASE_URL: http://localhost:5000/api
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+volumes:
+  mongo-data:
