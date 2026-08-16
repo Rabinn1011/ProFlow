@@ -167,7 +167,7 @@ there is no audit trail of status changes. Unassigned completions group under
 
 **Done when:** two accounts hold a conversation that survives a refresh.
 
-## Increment 10 — Hardening & ship ◐ (2026-07-27)
+## Increment 10 — Hardening & ship ✅ (2026-08-16)
 
 - ✅ **Jest + Supertest, 44 tests** against `mongodb-memory-server` (no external DB, so CI
   needs no service container). `tsconfig.test.json` exists because the base config scopes
@@ -180,13 +180,14 @@ there is no audit trail of status changes. Unassigned completions group under
 - ✅ **`COOKIE_CROSS_SITE`** added: cookie SameSite mode is now a deployment fact, not
   inferred from `NODE_ENV`. Compose runs "production" with both halves on localhost
   (same-site), which the old `NODE_ENV`-only logic would have got wrong.
-- ◐ **Docker written but UNVERIFIED** — `server/Dockerfile` (multi-stage, non-root),
+- ✅ **Docker verified 2026-08-16** — `server/Dockerfile` (multi-stage, non-root),
   `client/Dockerfile` (build → nginx with SPA fallback + asset caching),
-  `docker-compose.yml` (mongo with healthcheck, server, client). Docker is not installed
-  on the dev machine, so none of it has been built or run yet.
+  `docker-compose.yml` (mongo with healthcheck, server, client). `docker compose up`
+  builds and runs; health check, SPA deep-route fallback, registration, CORS and the
+  `SameSite=Strict` refresh cookie all confirmed against the running stack.
 
 **Done when:** `docker compose up` on a clean machine gives a working ProFlow;
-CI is green. — *tests and CI done; compose still needs a real run.*
+CI is green. ✅
 
 ---
 
