@@ -11,8 +11,7 @@ import {
 } from "../hooks/useProjects";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import type { Project } from "../services/project.service";
-import { AppHeader } from "../components/AppHeader";
-import { Breadcrumbs } from "../components/Breadcrumbs";
+import { AppShell } from "../components/AppShell";
 import { ProjectFormModal } from "../components/ProjectFormModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { MembersPanel } from "../components/MembersPanel";
@@ -52,24 +51,34 @@ export default function WorkspaceProjects() {
   const workspaceName = workspaceQuery.data?.name ?? "Workspace";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <AppHeader>
-        <Breadcrumbs items={[{ label: "Workspaces", to: "/app" }, { label: workspaceName }]} />
-        <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
-          {workspaceName}
-        </h1>
-        {canDelete && (
-          <Link
-            to={`/app/workspaces/${workspaceId}/analytics`}
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
-          >
-            <BarChart3 size={16} />
-            View analytics
-          </Link>
-        )}
-      </AppHeader>
-
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
+    <AppShell
+      title={workspaceName}
+      crumbs={[{ label: "Workspaces", to: "/app" }, { label: workspaceName }]}
+      actions={
+        <>
+          {canDelete && (
+            <Link
+              to={`/app/workspaces/${workspaceId}/analytics`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+            >
+              <BarChart3 size={16} />
+              Analytics
+            </Link>
+          )}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setDialog({ mode: "create" })}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
+            >
+              <Plus size={16} />
+              New project
+            </button>
+          )}
+        </>
+      }
+    >
+      <>
         {workspaceQuery.isError && (
           <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {errorMessage(workspaceQuery.error) ?? "Failed to load workspace"}
@@ -81,22 +90,12 @@ export default function WorkspaceProjects() {
           </div>
         )}
 
-        <section className="animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Projects</h2>
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => setDialog({ mode: "create" })}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
-              >
-                <Plus size={16} />
-                New project
-              </button>
-            )}
-          </div>
+        <section className="animate-fade-in-up">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500">
+            Projects
+          </h2>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projectsQuery.isPending &&
               [0, 1].map((key) => (
                 <div key={key} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
@@ -156,7 +155,7 @@ export default function WorkspaceProjects() {
         </section>
 
         <MembersPanel workspaceId={workspaceId} myRole={role} />
-      </main>
+      </>
 
       {dialog?.mode === "create" && (
         <ProjectFormModal
@@ -201,6 +200,6 @@ export default function WorkspaceProjects() {
           onConfirm={() => deleteMutation.mutate(dialog.project.id, { onSuccess: closeDialog })}
         />
       )}
-    </div>
+    </AppShell>
   );
 }

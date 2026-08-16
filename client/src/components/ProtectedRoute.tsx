@@ -8,6 +8,8 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   if (isBootstrapping) return <AuthLoadingScreen />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // Landing, not /login: signing out should return you to the public front door, and it
+  // offers both "Sign in" and "Get started" for whoever lands here without a session.
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   return children ? children : <Outlet />;
 }

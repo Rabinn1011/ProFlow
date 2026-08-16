@@ -16,8 +16,7 @@ import { useAuthStore } from "../store/authStore";
 import { useWorkspace } from "../hooks/useWorkspaces";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
-import { AppHeader } from "../components/AppHeader";
-import { Breadcrumbs } from "../components/Breadcrumbs";
+import { AppShell } from "../components/AppShell";
 
 // Validated with the dataviz palette checker (light surface): lightness band, chroma
 // floor, CVD separation (worst adjacent ΔE 23.2 deutan) and normal-vision floor all pass.
@@ -110,28 +109,15 @@ export default function WorkspaceAnalytics() {
   const hasTasks = (data?.totals.total ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <AppHeader>
-        <Breadcrumbs
-          items={[
-            { label: "Workspaces", to: "/app" },
-            { label: workspaceName, to: `/app/workspaces/${workspaceId}` },
-            { label: "Analytics" },
-          ]}
-        />
-        <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
-          Analytics
-        </h1>
-      </AppHeader>
-
-      <main className="mx-auto max-w-6xl space-y-4 px-4 py-8">
-        {analyticsQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {errorMessage(analyticsQuery.error) ?? "Failed to load analytics"}
-          </div>
-        )}
-
-        <div className="flex items-center justify-end gap-2">
+    <AppShell
+      title="Analytics"
+      crumbs={[
+        { label: "Workspaces", to: "/app" },
+        { label: workspaceName, to: `/app/workspaces/${workspaceId}` },
+        { label: "Analytics" },
+      ]}
+      actions={
+        <div className="flex items-center gap-2">
           <label htmlFor="range" className="text-xs font-medium text-slate-500">
             Range
           </label>
@@ -148,6 +134,14 @@ export default function WorkspaceAnalytics() {
             ))}
           </select>
         </div>
+      }
+    >
+      <>
+        {analyticsQuery.isError && (
+          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {errorMessage(analyticsQuery.error) ?? "Failed to load analytics"}
+          </div>
+        )}
 
         {analyticsQuery.isPending ? (
           <div className="grid gap-4">
@@ -333,7 +327,7 @@ export default function WorkspaceAnalytics() {
             </div>
           </>
         )}
-      </main>
-    </div>
+      </>
+    </AppShell>
   );
 }

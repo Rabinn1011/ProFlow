@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
-import { AppHeader } from "../components/AppHeader";
+import { AppShell } from "../components/AppShell";
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
@@ -42,33 +42,35 @@ export default function Dashboard() {
   const workspaces = workspacesQuery.data ?? [];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <AppHeader>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">{user ? `Signed in as ${user.email}` : ""}</p>
-      </AppHeader>
-
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
+    <AppShell
+      title={user?.name ? `Welcome back, ${user.name.split(" ")[0]}` : "Dashboard"}
+      subtitle={
+        <p className="mt-1 text-sm text-slate-500">
+          {workspaces.length === 0
+            ? "Create a workspace to get started."
+            : `${workspaces.length} workspace${workspaces.length === 1 ? "" : "s"}`}
+        </p>
+      }
+      actions={
+        <button
+          type="button"
+          onClick={() => setDialog({ mode: "create" })}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
+        >
+          <Plus size={16} />
+          New workspace
+        </button>
+      }
+    >
+      <>
         {workspacesQuery.isError && (
           <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {errorMessage(workspacesQuery.error) ?? "Failed to load workspaces"}
           </div>
         )}
 
-        <section className="animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Workspaces</h2>
-            <button
-              type="button"
-              onClick={() => setDialog({ mode: "create" })}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
-            >
-              <Plus size={16} />
-              New workspace
-            </button>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <section className="animate-fade-in-up">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {workspacesQuery.isPending &&
               [0, 1].map((key) => (
                 <div key={key} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
@@ -128,13 +130,18 @@ export default function Dashboard() {
               })}
 
             {!workspacesQuery.isPending && !workspacesQuery.isError && workspaces.length === 0 && (
-              <div className="text-sm text-slate-500">
-                No workspaces yet. Create your first one to get started.
-              </div>
+              <button
+                type="button"
+                onClick={() => setDialog({ mode: "create" })}
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500 transition hover:border-violet-300 hover:text-violet-700 sm:col-span-2 lg:col-span-3"
+              >
+                <Plus size={20} />
+                Create your first workspace
+              </button>
             )}
           </div>
         </section>
-      </main>
+      </>
 
       {dialog?.mode === "create" && (
         <WorkspaceFormModal
@@ -176,6 +183,6 @@ export default function Dashboard() {
           onConfirm={() => deleteMutation.mutate(dialog.workspace.id, { onSuccess: closeDialog })}
         />
       )}
-    </div>
+    </AppShell>
   );
 }

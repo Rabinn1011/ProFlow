@@ -15,8 +15,7 @@ import { useProjectRealtime } from "../hooks/useProjectRealtime";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import type { Task, TaskStatus } from "../services/task.service";
 import { MessageSquare } from "lucide-react";
-import { AppHeader } from "../components/AppHeader";
-import { Breadcrumbs } from "../components/Breadcrumbs";
+import { AppShell } from "../components/AppShell";
 import { BoardColumn } from "../components/BoardColumn";
 import { TaskDetailPanel } from "../components/TaskDetailPanel";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -126,29 +125,25 @@ export default function ProjectBoard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <AppHeader>
-        <Breadcrumbs
-          items={[
-            { label: "Workspaces", to: "/app" },
-            { label: workspaceName, to: `/app/workspaces/${workspaceId}` },
-            { label: projectName },
-          ]}
-        />
-        <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
-          {projectName}
-        </h1>
+    <AppShell
+      title={projectName}
+      crumbs={[
+        { label: "Workspaces", to: "/app" },
+        { label: workspaceName, to: `/app/workspaces/${workspaceId}` },
+        { label: projectName },
+      ]}
+      actions={
         <button
           type="button"
           onClick={() => setIsChatOpen(true)}
-          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
         >
           <MessageSquare size={16} />
           Chat
         </button>
-      </AppHeader>
-
-      <main className="mx-auto max-w-6xl space-y-4 px-4 py-8">
+      }
+    >
+      <>
         {tasksQuery.isError && (
           <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {errorMessage(tasksQuery.error) ?? "Failed to load tasks"}
@@ -192,7 +187,7 @@ export default function ProjectBoard() {
             </div>
           </DragDropContext>
         )}
-      </main>
+      </>
 
       {selectedTask && (
         <TaskDetailPanel
@@ -231,6 +226,6 @@ export default function ProjectBoard() {
           onConfirm={() => handleDelete(selectedTask)}
         />
       )}
-    </div>
+    </AppShell>
   );
 }
