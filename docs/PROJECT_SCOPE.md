@@ -143,8 +143,8 @@ Minimum viable version:
 - A `Message` model — workspaceId, projectId, author, body, createdAt.
 - Send/receive over the existing Socket.io connection.
 - Persist messages and load the last ~50 on open.
-- Viewers can read; whether they can post is _(undecided — leaning yes, they're stakeholders
-  who need to ask questions)_.
+- Viewers can read **and post** — the open question was resolved as yes on 2026-08-16;
+  they are stakeholders who need to ask questions.
 
 Out of scope: threads, reactions, file attachments, DMs, editing, typing indicators.
 

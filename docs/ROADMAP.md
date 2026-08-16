@@ -159,13 +159,27 @@ Known limitation: throughput is attributed by **assignee**, not by who moved the
 there is no audit trail of status changes. Unassigned completions group under
 "Unassigned".
 
-## Increment 9 — Chat ☐
+## Increment 9 — Chat ✅ (2026-08-16)
 
-- `Message` model + history endpoint (last 50, paginated)
-- Socket send/receive in the project room (auth from Increment 6 reused)
-- Chat panel on the project page
+- `Message` model (`workspaceId`, `projectId`, `author`, `body`, 2000-char cap) with a
+  `{ projectId, createdAt: -1 }` index serving the history query directly.
+- `GET /workspaces/:wsId/projects/:pId/messages?before=&limit=` — member+, 50 per page,
+  max 100. **Keyset (cursor) pagination on `createdAt`**, not offset: live messages
+  arriving mid-scroll cannot shift the window and duplicate a row. Fetches `limit + 1`
+  to report `hasMore` without a second count query.
+- Socket `chat:send` → persist → broadcast `chat:message` to the room. **Authorization is
+  room membership**: `project:join` already verified workspace membership, so
+  `socket.rooms.has()` is the check — a socket that never joined gets `chat:error`.
+- `ChatPanel` slide-over on the board: day separators, own-vs-others bubbles,
+  Enter to send / Shift+Enter for newline, "Load older messages", auto-scroll.
+  Client cache appends to page 0 and de-dupes by id.
+- **Viewers can post** — scope §4.6's open question resolved as yes; they are stakeholders
+  who need to ask questions.
+- 6 history tests (ordering, 50-cap, cursor walk, project isolation, viewer read,
+  non-member 403) plus a 7-assertion socket end-to-end run covering two clients, viewer
+  posting, empty/oversized rejection, persistence, and the non-joined-socket case.
 
-**Done when:** two accounts hold a conversation that survives a refresh.
+**Done when:** two accounts hold a conversation that survives a refresh. ✅
 
 ## Increment 10 — Hardening & ship ✅ (2026-08-16)
 
