@@ -1,18 +1,24 @@
-import { useEffect, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo } from "react";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { API_BASE_URL } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import { useSocket } from "./useSocket";
 import { tasksQueryKey } from "./useTasks";
+import { messagesQueryKey } from "./useMessages";
 import type { Task } from "../services/task.service";
+import type { ChatMessage, MessagePage } from "../services/message.service";
 
 type TaskEvent = { task: Task };
 type TaskDeletedEvent = { taskId: string };
+type ChatEvent = { message: ChatMessage };
 
+// One socket per project view, shared by the board and the chat panel — calling useSocket
+// in two places would open two connections.
+//
 // Keeps the board in sync with other people's edits by patching the React Query cache
 // in place. Refetching on every event would work but throws away the payload the server
 // already sent, and flickers the board for everyone on each keystroke-sized change.
-export function useProjectRealtime(workspaceId: string, projectId: string): void {
+export function useProjectRealtime(workspaceId: string, projectId: string) {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -22,10 +28,11 @@ export function useProjectRealtime(workspaceId: string, projectId: string): void
   useEffect(() => {
     if (!socket || !workspaceId || !projectId) return;
 
-    const queryKey = tasksQueryKey(workspaceId, projectId);
+    const taskKey = tasksQueryKey(workspaceId, projectId);
+    const messageKey = messagesQueryKey(workspaceId, projectId);
 
     const upsert = ({ task }: TaskEvent) => {
-      queryClient.setQueryData<Task[]>(queryKey, (current) => {
+      queryClient.setQueryData<Task[]>(taskKey, (current) => {
         if (!current) return current;
         const index = current.findIndex((t) => t.id === task.id);
         if (index === -1) return [...current, task];
@@ -37,9 +44,25 @@ export function useProjectRealtime(workspaceId: string, projectId: string): void
     };
 
     const remove = ({ taskId }: TaskDeletedEvent) => {
-      queryClient.setQueryData<Task[]>(queryKey, (current) =>
+      queryClient.setQueryData<Task[]>(taskKey, (current) =>
         current ? current.filter((t) => t.id !== taskId) : current,
       );
+    };
+
+    // Page 0 holds the newest messages, so a new one is appended there.
+    const appendMessage = ({ message }: ChatEvent) => {
+      queryClient.setQueryData<InfiniteData<MessagePage>>(messageKey, (current) => {
+        if (!current || current.pages.length === 0) return current;
+        if (current.pages.some((page) => page.messages.some((m) => m.id === message.id))) {
+          return current;
+        }
+
+        const [first, ...rest] = current.pages;
+        return {
+          ...current,
+          pages: [{ ...first, messages: [...first.messages, message] }, ...rest],
+        };
+      });
     };
 
     const join = () => socket.emit("project:join", { projectId });
@@ -52,6 +75,7 @@ export function useProjectRealtime(workspaceId: string, projectId: string): void
     socket.on("task:updated", upsert);
     socket.on("task:moved", upsert);
     socket.on("task:deleted", remove);
+    socket.on("chat:message", appendMessage);
 
     return () => {
       socket.off("connect", join);
@@ -59,7 +83,17 @@ export function useProjectRealtime(workspaceId: string, projectId: string): void
       socket.off("task:updated", upsert);
       socket.off("task:moved", upsert);
       socket.off("task:deleted", remove);
+      socket.off("chat:message", appendMessage);
       socket.emit("project:leave", { projectId });
     };
   }, [socket, queryClient, workspaceId, projectId]);
+
+  const sendMessage = useCallback(
+    (body: string) => {
+      socket?.emit("chat:send", { projectId, body });
+    },
+    [socket, projectId],
+  );
+
+  return { sendMessage, isConnected: Boolean(socket) };
 }

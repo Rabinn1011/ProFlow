@@ -23,6 +23,7 @@ import {
   updateMemberRole,
 } from "../controllers/members.controller";
 import { getWorkspaceAnalytics } from "../controllers/analytics.controller";
+import { listMessages } from "../controllers/messages.controller";
 
 const workspacesRouter = Router();
 
@@ -131,6 +132,15 @@ workspacesRouter.delete(
   requireWorkspaceRole("member"),
   deleteTask,
 );
+// Viewers can read and post: they are stakeholders who need to ask questions
+// (scope §4.6). Posting itself happens over the socket, not here.
+workspacesRouter.get(
+  "/:workspaceId/projects/:projectId/messages",
+  requireAuth,
+  requireWorkspaceMember,
+  listMessages,
+);
+
 workspacesRouter.post(
   "/:workspaceId/projects/:projectId/tasks/:taskId/move",
   requireAuth,
