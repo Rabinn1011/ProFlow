@@ -3,8 +3,12 @@ import mongoose from "mongoose";
 import type { Server as SocketIOServer, Socket } from "socket.io";
 import { Project } from "../models/project.model";
 import { Workspace } from "../models/workspace.model";
+import { MAX_MESSAGE_LENGTH, Message } from "../models/message.model";
+import { serializeMessages } from "../controllers/messages.controller";
 
 type JoinPayload = { projectId?: string };
+
+type ChatSendPayload = { projectId?: string; body?: string };
 
 const getAccessTokenSecret = (): string => {
   const secret = process.env.ACCESS_TOKEN_SECRET;
@@ -67,6 +71,39 @@ export function registerSocketHandlers(io: SocketIOServer): void {
 
     socket.on("project:leave", ({ projectId }: JoinPayload) => {
       if (projectId) socket.leave(`project:${projectId}`);
+    });
+
+    socket.on("chat:send", ({ projectId, body }: ChatSendPayload) => {
+      if (!projectId || typeof body !== "string") return;
+
+      const trimmed = body.trim();
+      if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return;
+
+      // Room membership is the authorization check: joining already verified that this
+      // user belongs to the workspace that owns the project.
+      if (!socket.rooms.has(`project:${projectId}`)) {
+        socket.emit("chat:error", { message: "Join the project before sending messages" });
+        return;
+      }
+
+      void (async () => {
+        try {
+          const project = await Project.findById(projectId).select("workspaceId");
+          if (!project) return;
+
+          const message = await Message.create({
+            workspaceId: project.workspaceId,
+            projectId,
+            author: userId,
+            body: trimmed,
+          });
+
+          const [dto] = await serializeMessages([message]);
+          io.to(`project:${projectId}`).emit("chat:message", { message: dto });
+        } catch {
+          socket.emit("chat:error", { message: "Could not send that message" });
+        }
+      })();
     });
   });
 }

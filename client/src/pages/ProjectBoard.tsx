@@ -14,11 +14,13 @@ import {
 import { useProjectRealtime } from "../hooks/useProjectRealtime";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import type { Task, TaskStatus } from "../services/task.service";
+import { MessageSquare } from "lucide-react";
 import { AppHeader } from "../components/AppHeader";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { BoardColumn } from "../components/BoardColumn";
 import { TaskDetailPanel } from "../components/TaskDetailPanel";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { ChatPanel } from "../components/ChatPanel";
 
 const COLUMNS: { status: TaskStatus; label: string }[] = [
   { status: "todo", label: "To Do" },
@@ -52,6 +54,7 @@ export default function ProjectBoard() {
   const user = useAuthStore((s) => s.user);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const workspaceQuery = useWorkspace(workspaceId);
   const projectsQuery = useProjects(workspaceId);
@@ -62,7 +65,7 @@ export default function ProjectBoard() {
   const deleteMutation = useDeleteTask(workspaceId, projectId);
   const moveMutation = useMoveTask(workspaceId, projectId);
 
-  useProjectRealtime(workspaceId, projectId);
+  const { sendMessage } = useProjectRealtime(workspaceId, projectId);
 
   const role = workspaceQuery.data ? getMyRole(workspaceQuery.data, user?.id) : null;
   const canEdit = hasAtLeastRole(role, "member");
@@ -135,6 +138,14 @@ export default function ProjectBoard() {
         <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
           {projectName}
         </h1>
+        <button
+          type="button"
+          onClick={() => setIsChatOpen(true)}
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
+        >
+          <MessageSquare size={16} />
+          Chat
+        </button>
       </AppHeader>
 
       <main className="mx-auto max-w-6xl space-y-4 px-4 py-8">
@@ -196,6 +207,15 @@ export default function ProjectBoard() {
             updateMutation.mutate({ taskId: selectedTask.id, ...input }, { onSuccess: closePanel })
           }
           onDelete={() => setIsConfirmingDelete(true)}
+        />
+      )}
+
+      {isChatOpen && (
+        <ChatPanel
+          workspaceId={workspaceId}
+          projectId={projectId}
+          onClose={() => setIsChatOpen(false)}
+          onSend={sendMessage}
         />
       )}
 
