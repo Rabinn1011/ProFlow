@@ -8,6 +8,7 @@ import {
 } from "../services/member.service";
 import type { WorkspaceRole } from "../services/workspace.service";
 import { workspaceQueryKey, workspacesQueryKey } from "./useWorkspaces";
+import { toast } from "../store/toastStore";
 
 export const membersQueryKey = (workspaceId: string) =>
   ["workspaces", workspaceId, "members"] as const;
@@ -39,17 +40,29 @@ function useMemberMutation<TVariables>(
 }
 
 export function useAddMember(workspaceId: string) {
-  return useMemberMutation(workspaceId, (input: { email: string; role: WorkspaceRole }) =>
-    addMember(workspaceId, input),
-  );
+  return useMemberMutation(workspaceId, async (input: { email: string; role: WorkspaceRole }) => {
+    const members = await addMember(workspaceId, input);
+    toast.success(`${input.email} added as ${input.role}`);
+    return members;
+  });
 }
 
 export function useUpdateMemberRole(workspaceId: string) {
-  return useMemberMutation(workspaceId, ({ userId, role }: { userId: string; role: WorkspaceRole }) =>
-    updateMemberRole(workspaceId, userId, role),
+  return useMemberMutation(
+    workspaceId,
+    async ({ userId, role }: { userId: string; role: WorkspaceRole }) => {
+      const members = await updateMemberRole(workspaceId, userId, role);
+      const changed = members.find((m) => m.userId === userId);
+      toast.success(`${changed?.name ?? "Member"} is now ${role}`);
+      return members;
+    },
   );
 }
 
 export function useRemoveMember(workspaceId: string) {
-  return useMemberMutation(workspaceId, (userId: string) => removeMember(workspaceId, userId));
+  return useMemberMutation(workspaceId, async (userId: string) => {
+    const members = await removeMember(workspaceId, userId);
+    toast.success("Member removed from the workspace");
+    return members;
+  });
 }

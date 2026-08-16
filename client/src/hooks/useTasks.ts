@@ -9,6 +9,7 @@ import {
   type TaskInput,
   type TaskStatus,
 } from "../services/task.service";
+import { toast } from "../store/toastStore";
 
 export const tasksQueryKey = (workspaceId: string, projectId: string) =>
   ["workspaces", workspaceId, "projects", projectId, "tasks"] as const;
@@ -89,7 +90,9 @@ export function useDeleteTask(workspaceId: string, projectId: string) {
 
   return useMutation({
     mutationFn: (taskId: string) => deleteTask(workspaceId, projectId, taskId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: tasksQueryKey(workspaceId, projectId) }),
+    onSuccess: () => {
+      toast.success("Task deleted");
+      return queryClient.invalidateQueries({ queryKey: tasksQueryKey(workspaceId, projectId) });
+    },
   });
 }

@@ -7,6 +7,7 @@ import {
   renameWorkspace,
   type Workspace,
 } from "../services/workspace.service";
+import { toast } from "../store/toastStore";
 
 export const workspacesQueryKey = ["workspaces"] as const;
 export const workspaceQueryKey = (id: string) => ["workspaces", id] as const;
@@ -31,7 +32,10 @@ export function useCreateWorkspace() {
 
   return useMutation({
     mutationFn: (name: string) => createWorkspace(name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: workspacesQueryKey }),
+    onSuccess: (workspace) => {
+      toast.success(`Workspace "${workspace.name}" created`);
+      return queryClient.invalidateQueries({ queryKey: workspacesQueryKey });
+    },
   });
 }
 
@@ -40,7 +44,10 @@ export function useRenameWorkspace() {
 
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => renameWorkspace(id, name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: workspacesQueryKey }),
+    onSuccess: (workspace) => {
+      toast.success(`Renamed to "${workspace.name}"`);
+      return queryClient.invalidateQueries({ queryKey: workspacesQueryKey });
+    },
   });
 }
 
@@ -49,6 +56,9 @@ export function useDeleteWorkspace() {
 
   return useMutation({
     mutationFn: (id: string) => deleteWorkspace(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: workspacesQueryKey }),
+    onSuccess: () => {
+      toast.success("Workspace deleted");
+      return queryClient.invalidateQueries({ queryKey: workspacesQueryKey });
+    },
   });
 }

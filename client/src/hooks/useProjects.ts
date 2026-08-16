@@ -6,6 +6,7 @@ import {
   updateProject,
   type Project,
 } from "../services/project.service";
+import { toast } from "../store/toastStore";
 
 export const projectsQueryKey = (workspaceId: string) => ["workspaces", workspaceId, "projects"] as const;
 
@@ -23,7 +24,10 @@ export function useCreateProject(workspaceId: string) {
   return useMutation({
     mutationFn: (input: { name: string; description?: string | null }) =>
       createProject(workspaceId, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) }),
+    onSuccess: (project) => {
+      toast.success(`Project "${project.name}" created`);
+      return queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) });
+    },
   });
 }
 
@@ -39,7 +43,10 @@ export function useUpdateProject(workspaceId: string) {
       name?: string;
       description?: string | null;
     }) => updateProject(workspaceId, projectId, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) }),
+    onSuccess: (project) => {
+      toast.success(`Project "${project.name}" updated`);
+      return queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) });
+    },
   });
 }
 
@@ -48,6 +55,9 @@ export function useDeleteProject(workspaceId: string) {
 
   return useMutation({
     mutationFn: (projectId: string) => deleteProject(workspaceId, projectId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) }),
+    onSuccess: () => {
+      toast.success("Project deleted");
+      return queryClient.invalidateQueries({ queryKey: projectsQueryKey(workspaceId) });
+    },
   });
 }
