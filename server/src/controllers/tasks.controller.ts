@@ -191,7 +191,16 @@ export const updateTask = async (
       else if (!mongoose.isValidObjectId(assigneeId)) {
         res.status(400).json({ message: "Invalid assigneeId" });
         return;
-      } else task.assigneeId = new mongoose.Types.ObjectId(assigneeId);
+      } else {
+        // Assigning someone who cannot see the workspace would create a task nobody can
+        // act on, and it would show up in analytics as a member who does not exist here.
+        const isMember = req.workspace?.members.some((m) => m.user.toString() === assigneeId);
+        if (!isMember) {
+          res.status(400).json({ message: "Assignee is not a member of this workspace" });
+          return;
+        }
+        task.assigneeId = new mongoose.Types.ObjectId(assigneeId);
+      }
     }
     if (typeof dueDate !== "undefined") {
       if (dueDate === null) task.dueDate = null;

@@ -22,6 +22,7 @@ export type TaskInput = {
   description?: string | null;
   status?: TaskStatus;
   dueDate?: string | null;
+  assigneeId?: string | null;
 };
 
 async function toError(res: Response, fallback: string): Promise<Error> {

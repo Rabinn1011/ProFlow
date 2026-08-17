@@ -100,6 +100,81 @@ describe("workspace access control", () => {
     });
   });
 
+  describe("task assignment", () => {
+    it("allows assigning a workspace member", async () => {
+      const owner = await registerUser();
+      const mate = await registerUser();
+      const workspaceId = await createWorkspace(owner.token);
+      await addMember(owner.token, workspaceId, mate.email, "member").expect(201);
+      const projectId = await createProject(owner.token, workspaceId);
+
+      const created = await request(app)
+        .post(`/api/workspaces/${workspaceId}/projects/${projectId}/tasks`)
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ title: "Assign me" })
+        .expect(201);
+
+      const res = await request(app)
+        .patch(
+          `/api/workspaces/${workspaceId}/projects/${projectId}/tasks/${created.body.task.id}`,
+        )
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ assigneeId: mate.id })
+        .expect(200);
+
+      expect(res.body.task.assigneeId).toBe(mate.id);
+    });
+
+    it("rejects assigning someone who is not a member", async () => {
+      const owner = await registerUser();
+      const outsider = await registerUser();
+      const workspaceId = await createWorkspace(owner.token);
+      const projectId = await createProject(owner.token, workspaceId);
+
+      const created = await request(app)
+        .post(`/api/workspaces/${workspaceId}/projects/${projectId}/tasks`)
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ title: "Assign an outsider" })
+        .expect(201);
+
+      await request(app)
+        .patch(
+          `/api/workspaces/${workspaceId}/projects/${projectId}/tasks/${created.body.task.id}`,
+        )
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ assigneeId: outsider.id })
+        .expect(400);
+    });
+
+    it("allows clearing the assignee", async () => {
+      const owner = await registerUser();
+      const workspaceId = await createWorkspace(owner.token);
+      const projectId = await createProject(owner.token, workspaceId);
+
+      const created = await request(app)
+        .post(`/api/workspaces/${workspaceId}/projects/${projectId}/tasks`)
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ title: "Unassign me" })
+        .expect(201);
+
+      const url = `/api/workspaces/${workspaceId}/projects/${projectId}/tasks/${created.body.task.id}`;
+
+      await request(app)
+        .patch(url)
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ assigneeId: owner.id })
+        .expect(200);
+
+      const cleared = await request(app)
+        .patch(url)
+        .set("Authorization", `Bearer ${owner.token}`)
+        .send({ assigneeId: null })
+        .expect(200);
+
+      expect(cleared.body.task.assigneeId).toBeNull();
+    });
+  });
+
   describe("cascade deletes", () => {
     it("removes projects and tasks when a workspace is deleted", async () => {
       const owner = await registerUser();

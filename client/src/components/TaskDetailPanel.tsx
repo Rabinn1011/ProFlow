@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Trash2, X } from "lucide-react";
 import type { Task, TaskInput, TaskStatus } from "../services/task.service";
+import type { Member } from "../services/member.service";
 import { fromDateInputValue, toDateInputValue } from "../lib/taskDate";
 
 type TaskFormValues = {
@@ -9,10 +10,12 @@ type TaskFormValues = {
   description: string;
   status: TaskStatus;
   dueDate: string;
+  assigneeId: string;
 };
 
 type TaskDetailPanelProps = {
   task: Task;
+  members: Member[];
   canEdit: boolean;
   isSaving: boolean;
   isDeleting: boolean;
@@ -24,6 +27,7 @@ type TaskDetailPanelProps = {
 
 export function TaskDetailPanel({
   task,
+  members,
   canEdit,
   isSaving,
   isDeleting,
@@ -43,6 +47,8 @@ export function TaskDetailPanel({
       description: task.description ?? "",
       status: task.status,
       dueDate: toDateInputValue(task.dueDate),
+      // "" is the unassigned option; the API wants null for that.
+      assigneeId: task.assigneeId ?? "",
     },
   });
 
@@ -61,6 +67,7 @@ export function TaskDetailPanel({
       description: values.description.trim() ? values.description.trim() : null,
       status: values.status,
       dueDate: fromDateInputValue(values.dueDate),
+      assigneeId: values.assigneeId || null,
     }),
   );
 
@@ -143,6 +150,31 @@ export function TaskDetailPanel({
                 <option value="in_progress">In Progress</option>
                 <option value="done">Done</option>
               </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="task-assignee"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Assignee
+              </label>
+              <select
+                id="task-assignee"
+                disabled={!canEdit}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 disabled:bg-slate-50 disabled:text-slate-500"
+                {...register("assigneeId")}
+              >
+                <option value="">Unassigned</option>
+                {members.map((member) => (
+                  <option key={member.userId} value={member.userId}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-400">
+                Only workspace members can be assigned.
+              </p>
             </div>
 
             <div>

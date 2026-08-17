@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { API_BASE_URL } from "../services/api";
 import { useAuthStore } from "../store/authStore";
@@ -23,7 +23,11 @@ export function useProjectRealtime(workspaceId: string, projectId: string) {
   const accessToken = useAuthStore((s) => s.accessToken);
 
   const socketUrl = useMemo(() => API_BASE_URL.replace(/\/api\/?$/, ""), []);
-  const socket = useSocket(socketUrl, accessToken);
+  const socket = useSocket(socketUrl, Boolean(accessToken));
+
+  // Distinguishes the first connect from a reconnect. On the first one the queries have
+  // just loaded, so re-fetching would be a wasted round trip.
+  const hasConnectedRef = useRef(false);
 
   useEffect(() => {
     if (!socket || !workspaceId || !projectId) return;
@@ -65,7 +69,18 @@ export function useProjectRealtime(workspaceId: string, projectId: string) {
       });
     };
 
-    const join = () => socket.emit("project:join", { projectId });
+    const join = () => {
+      socket.emit("project:join", { projectId });
+
+      // Events that fired while the socket was down were never delivered, so the cache is
+      // stale by an unknown amount. Refetching once on reconnect is the only way back to
+      // the truth — this happens routinely on hosts that sleep idle connections.
+      if (hasConnectedRef.current) {
+        void queryClient.invalidateQueries({ queryKey: taskKey });
+        void queryClient.invalidateQueries({ queryKey: messageKey });
+      }
+      hasConnectedRef.current = true;
+    };
 
     // Join on every connect, so a reconnect re-enters the room instead of going silent.
     socket.on("connect", join);
