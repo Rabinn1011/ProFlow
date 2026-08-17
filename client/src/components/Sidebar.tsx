@@ -4,14 +4,7 @@ import { API_BASE_URL } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import { useWorkspaces } from "../hooks/useWorkspaces";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
-
-const initials = (name: string): string =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "?";
+import { initials } from "../lib/initials";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const user = useAuthStore((s) => s.user);

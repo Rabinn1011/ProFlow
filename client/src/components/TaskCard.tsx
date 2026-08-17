@@ -3,9 +3,11 @@ import { CalendarDays } from "lucide-react";
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import type { Task } from "../services/task.service";
 import { formatDueDate, isOverdue } from "../lib/taskDate";
+import { initials } from "../lib/initials";
 
 type TaskCardProps = {
   task: Task;
+  assigneeName?: string;
   isDragging?: boolean;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   onClick: () => void;
@@ -14,7 +16,7 @@ type TaskCardProps = {
 // A div rather than a button: the drag library owns mousedown on this element, and a
 // nested native button fights it for the event. Keyboard access is restored by hand.
 export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskCard(
-  { task, isDragging = false, dragHandleProps, onClick, ...rest },
+  { task, assigneeName, isDragging = false, dragHandleProps, onClick, ...rest },
   ref,
 ) {
   const overdue = isOverdue(task.dueDate, task.status);
@@ -41,15 +43,31 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
     >
       <div className="text-sm font-medium text-slate-900">{task.title}</div>
 
-      {task.dueDate && (
-        <span
-          className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-            overdue ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
-          }`}
-        >
-          <CalendarDays size={12} />
-          {formatDueDate(task.dueDate)}
-        </span>
+      {(task.dueDate || assigneeName) && (
+        <div className="mt-2 flex items-center justify-between gap-2">
+          {task.dueDate ? (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                overdue ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              <CalendarDays size={12} />
+              {formatDueDate(task.dueDate)}
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {assigneeName && (
+            <span
+              title={assigneeName}
+              aria-label={`Assigned to ${assigneeName}`}
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-[10px] font-bold text-violet-700"
+            >
+              {initials(assigneeName)}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

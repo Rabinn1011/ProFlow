@@ -12,6 +12,7 @@ import {
   useUpdateTask,
 } from "../hooks/useTasks";
 import { useProjectRealtime } from "../hooks/useProjectRealtime";
+import { useMembers } from "../hooks/useMembers";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import type { Task, TaskStatus } from "../services/task.service";
 import { MessageSquare } from "lucide-react";
@@ -58,6 +59,7 @@ export default function ProjectBoard() {
   const workspaceQuery = useWorkspace(workspaceId);
   const projectsQuery = useProjects(workspaceId);
   const tasksQuery = useTasks(workspaceId, projectId);
+  const membersQuery = useMembers(workspaceId);
 
   const createMutation = useCreateTask(workspaceId, projectId);
   const updateMutation = useUpdateTask(workspaceId, projectId);
@@ -74,6 +76,13 @@ export default function ProjectBoard() {
   const projectName = project?.name ?? "Project";
 
   const tasks = useMemo(() => tasksQuery.data ?? [], [tasksQuery.data]);
+  const members = useMemo(() => membersQuery.data ?? [], [membersQuery.data]);
+
+  // Cards only store an assignee id; this resolves it to a name for the avatar.
+  const assigneeNames = useMemo(
+    () => new Map(members.map((member) => [member.userId, member.name])),
+    [members],
+  );
 
   // Grouped from the same source the panel reads, so an edit updates both at once.
   const columns = useMemo(
@@ -178,6 +187,7 @@ export default function ProjectBoard() {
                   label={column.label}
                   status={column.status}
                   tasks={column.tasks}
+                  assigneeNames={assigneeNames}
                   canEdit={canEdit}
                   isCreating={createMutation.isPending}
                   onSelectTask={(task) => setSelectedTaskId(task.id)}
@@ -193,6 +203,7 @@ export default function ProjectBoard() {
         <TaskDetailPanel
           key={selectedTask.id}
           task={selectedTask}
+          members={members}
           canEdit={canEdit}
           isSaving={updateMutation.isPending}
           isDeleting={deleteMutation.isPending}

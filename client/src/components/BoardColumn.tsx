@@ -8,6 +8,7 @@ type BoardColumnProps = {
   label: string;
   status: TaskStatus;
   tasks: Task[];
+  assigneeNames: Map<string, string>;
   canEdit: boolean;
   isCreating: boolean;
   onSelectTask: (task: Task) => void;
@@ -18,6 +19,7 @@ export function BoardColumn({
   label,
   status,
   tasks,
+  assigneeNames,
   canEdit,
   isCreating,
   onSelectTask,
@@ -67,6 +69,9 @@ export function BoardColumn({
                     dragHandleProps={dragProvided.dragHandleProps}
                     isDragging={dragSnapshot.isDragging}
                     task={task}
+                    assigneeName={
+                      task.assigneeId ? assigneeNames.get(task.assigneeId) : undefined
+                    }
                     onClick={() => onSelectTask(task)}
                   />
                 )}
