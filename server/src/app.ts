@@ -29,6 +29,11 @@ app.get("/", (_req, res) => {
   res.json({ message: "Welcome to ProFlow API" });
 });
 
+// Lightweight keep-alive for free-tier hosts. No DB, no auth, no extra fields.
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/api/auth", authRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/users", usersRouter);
