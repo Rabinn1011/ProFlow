@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { User } from "../models/user.model";
 import { Task } from "../models/task.model";
+import { Project } from "../models/project.model";
 import { Workspace, type IWorkspaceDocument, type WorkspaceRole } from "../models/workspace.model";
 import { canManageMember, isWorkspaceRole, roleRank } from "../lib/workspaceRoles";
+import { removeUserFromProjects } from "../lib/realtime";
 
 // Every membership change below is a single conditional update rather than
 // load-modify-save. With save(), two requests that both read the workspace before either
@@ -252,6 +254,13 @@ export const removeMember = async (
     await Task.updateMany(
       { workspaceId: workspace._id, assigneeId: userId },
       { $set: { assigneeId: null } },
+    );
+
+    const projectIds = await Project.find({ workspaceId: workspace._id }).distinct("_id");
+    removeUserFromProjects(
+      req,
+      userId,
+      projectIds.map((id) => id.toString()),
     );
 
     res.status(200).json({ members: await reloadAndSerialize(workspace._id) });

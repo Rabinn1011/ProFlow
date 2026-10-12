@@ -5,7 +5,7 @@ import { Project } from "../models/project.model";
 import { Workspace } from "../models/workspace.model";
 import { MAX_MESSAGE_LENGTH, Message } from "../models/message.model";
 import { serializeMessages } from "../controllers/messages.controller";
-import { projectRoom } from "../lib/realtime";
+import { projectRoom, userRoom } from "../lib/realtime";
 
 const getAccessTokenSecret = (): string => {
   const secret = process.env.ACCESS_TOKEN_SECRET;
@@ -88,6 +88,7 @@ export function registerSocketHandlers(io: SocketIOServer): void {
 
   io.on("connection", (socket) => {
     const userId = socket.data.userId as string;
+    void socket.join(userRoom(userId));
 
     const allowJoin = createBucket(20, 2);
     const allowMessage = createBucket(10, 1);
