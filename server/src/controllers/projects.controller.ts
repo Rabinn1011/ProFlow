@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import type { RequestWithUser } from "../types/express";
 import { Project } from "../models/project.model";
 import { Task } from "../models/task.model";
+import { Message } from "../models/message.model";
 
 export const listProjects = async (
   req: RequestWithUser,
@@ -197,9 +198,11 @@ export const deleteProject = async (
       return;
     }
 
-    // Cascade: tasks belong to the project and are unreachable once it is gone.
-    await Task.deleteMany({ projectId: project._id });
+    // Cascade: tasks and chat belong to the project and are unreachable once it is gone.
+    // Parent first, so a partial failure leaves orphans rather than a hollowed-out project.
     await project.deleteOne();
+    await Task.deleteMany({ projectId: project._id });
+    await Message.deleteMany({ projectId: project._id });
 
     res.status(204).send();
   } catch (err) {
