@@ -30,7 +30,14 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+// Explicit cap: nothing in this API legitimately sends more than a long task description.
+app.use(express.json({ limit: "100kb" }));
+// Express 5 leaves req.body undefined when there is no JSON body, so every controller's
+// destructuring would throw. Normalise once here instead.
+app.use((req, _res, next) => {
+  req.body ??= {};
+  next();
+});
 app.use(cookieParser());
 
 app.get("/", (_req, res) => {
