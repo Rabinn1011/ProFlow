@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { login, logout, refresh, register } from "../controllers/auth.controller";
+import { requireTrustedOrigin } from "../middleware/csrf.middleware";
 import {
   loginLimiter,
   loginSprayLimiter,
@@ -8,6 +9,10 @@ import {
 } from "../middleware/rate-limit.middleware";
 
 const authRouter = Router();
+
+// These routes ride on the refresh cookie, so they are the ones a malicious site could
+// trigger from a victim's browser. See csrf.middleware.ts.
+authRouter.use(requireTrustedOrigin);
 
 authRouter.post("/register", registerLimiter, register);
 // Two layers: per-account guessing, then per-address spraying across many accounts.
