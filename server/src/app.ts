@@ -5,6 +5,7 @@ import authRouter from "./routes/auth.routes";
 import healthRouter from "./routes/health.routes";
 import usersRouter from "./routes/users.routes";
 import workspacesRouter from "./routes/workspaces.routes";
+import { getAllowedOrigins } from "./config/cors";
 import { errorHandler } from "./middleware/error.middleware";
 import { notFoundHandler } from "./middleware/not-found.middleware";
 
@@ -18,7 +19,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",").map((s) => s.trim()) ?? true,
+    origin: getAllowedOrigins(),
     credentials: true,
   }),
 );
