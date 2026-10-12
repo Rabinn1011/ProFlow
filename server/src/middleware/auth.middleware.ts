@@ -30,7 +30,8 @@ export const requireAuth = (req: RequestWithUser, res: Response, next: NextFunct
       return;
     }
 
-    const payload = jwt.verify(token, secret) as AccessTokenPayload;
+    // Pinning the algorithm closes off algorithm-confusion tricks with crafted headers.
+    const payload = jwt.verify(token, secret, { algorithms: ["HS256"] }) as AccessTokenPayload;
     req.user = { id: payload.sub, role: payload.role };
     next();
   } catch {
