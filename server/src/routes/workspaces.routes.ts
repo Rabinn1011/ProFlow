@@ -63,13 +63,8 @@ workspacesRouter.patch(
   requireWorkspaceRole("admin"),
   updateMemberRole,
 );
-workspacesRouter.delete(
-  "/:id/members/:userId",
-  requireAuth,
-  requireWorkspaceMember,
-  requireWorkspaceRole("admin"),
-  removeMember,
-);
+// No role gate: any member may leave. removeMember enforces admin+ for removing others.
+workspacesRouter.delete("/:id/members/:userId", requireAuth, requireWorkspaceMember, removeMember);
 
 workspacesRouter.get(
   "/:workspaceId/projects",

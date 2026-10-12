@@ -187,6 +187,7 @@ export const updateMemberRole = async (
   }
 };
 
+// Mounted for every role so anyone can leave; removing *someone else* still needs admin.
 export const removeMember = async (
   req: RequestWithUser,
   res: Response,
@@ -215,9 +216,15 @@ export const removeMember = async (
 
     // Leaving yourself is always allowed; removing someone else follows the rank rules.
     const isSelf = actorId === userId;
-    if (!isSelf && !canManageMember(actorRole, member.role)) {
-      res.status(403).json({ message: "You cannot remove that member" });
-      return;
+    if (!isSelf) {
+      if (roleRank[actorRole] < roleRank.admin) {
+        res.status(403).json({ message: "Insufficient workspace permissions" });
+        return;
+      }
+      if (!canManageMember(actorRole, member.role)) {
+        res.status(403).json({ message: "You cannot remove that member" });
+        return;
+      }
     }
 
     const result = await Workspace.updateOne(
