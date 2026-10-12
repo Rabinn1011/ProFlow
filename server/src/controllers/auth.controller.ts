@@ -1,8 +1,17 @@
 import type { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
-import { User } from "../models/user.model";
+import {
+  MAX_NAME_LENGTH,
+  MAX_PASSWORD_BYTES,
+  MIN_PASSWORD_LENGTH,
+  User,
+  compareAgainstDummyHash,
+  type IUserDocument,
+} from "../models/user.model";
 
 const REFRESH_COOKIE_NAME = "refreshToken";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Secrets and TTLs are read at call time, not module load time: this module is
 // imported through the app/route chain before dotenv has populated process.env,
@@ -57,88 +66,105 @@ const setRefreshCookie = (res: Response, token: string): void => {
   });
 };
 
+// updateOne rather than save(): login must not re-run schema validation on an account
+// created under older rules (e.g. a shorter password minimum).
+const issueTokens = async (user: IUserDocument, res: Response): Promise<string> => {
+  const refreshToken = signRefreshToken(user.id);
+  await User.updateOne({ _id: user._id }, { $set: { refreshToken } });
+  setRefreshCookie(res, refreshToken);
+  return signAccessToken(user.id, user.role);
+};
+
+const toUserDto = (user: IUserDocument) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
+const isString = (value: unknown): value is string => typeof value === "string";
+
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     // `role` is deliberately NOT read from the body: accepting it would let any client
     // self-provision an admin account. New users are always members.
-    const { name, email, password } = req.body as {
-      name?: string;
-      email?: string;
-      password?: string;
-    };
+    const { name, email, password } = req.body as Record<string, unknown>;
 
-    if (!name || !email || !password) {
+    if (!isString(name) || !isString(email) || !isString(password) || !name.trim() || !email.trim()) {
       res.status(400).json({ message: "name, email and password are required" });
       return;
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const trimmedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (trimmedName.length > MAX_NAME_LENGTH) {
+      res.status(400).json({ message: `name must be at most ${MAX_NAME_LENGTH} characters` });
+      return;
+    }
+    if (normalizedEmail.length > 254 || !EMAIL_PATTERN.test(normalizedEmail)) {
+      res.status(400).json({ message: "email is not valid" });
+      return;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      res.status(400).json({ message: `password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+      return;
+    }
+    if (Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
+      res.status(400).json({ message: `password must be at most ${MAX_PASSWORD_BYTES} bytes` });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail }).select("_id");
     if (existingUser) {
       res.status(409).json({ message: "Email already in use" });
       return;
     }
 
     const user = await User.create({
-      name,
-      email,
+      name: trimmedName,
+      email: normalizedEmail,
       password,
       role: "member",
     });
 
-    const accessToken = signAccessToken(user.id, user.role);
-    const refreshToken = signRefreshToken(user.id);
+    const accessToken = await issueTokens(user, res);
 
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    setRefreshCookie(res, refreshToken);
-
-    res.status(201).json({
-      accessToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.status(201).json({ accessToken, user: toUserDto(user) });
   } catch (error) {
+    // Two signups racing past the findOne above both reach create; the unique index
+    // catches the second one, which should read as a conflict, not a server error.
+    if ((error as { code?: number }).code === 11000) {
+      res.status(409).json({ message: "Email already in use" });
+      return;
+    }
     next(error as Error);
   }
 };
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email, password } = req.body as { email?: string; password?: string };
+    const { email, password } = req.body as Record<string, unknown>;
 
-    if (!email || !password) {
+    if (!isString(email) || !isString(password) || !email || !password) {
       res.status(400).json({ message: "email and password are required" });
       return;
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user || !(await user.comparePassword(password))) {
+    const user = await User.findOne({ email: email.trim().toLowerCase() }).select("+password");
+
+    // Always run bcrypt, even for an unknown email, so both failures take the same time.
+    const passwordOk = user
+      ? await user.comparePassword(password)
+      : await compareAgainstDummyHash(password);
+    if (!user || !passwordOk) {
       res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
-    const accessToken = signAccessToken(user.id, user.role);
-    const refreshToken = signRefreshToken(user.id);
+    const accessToken = await issueTokens(user, res);
 
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    setRefreshCookie(res, refreshToken);
-
-    res.status(200).json({
-      accessToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.status(200).json({ accessToken, user: toUserDto(user) });
   } catch (error) {
     next(error as Error);
   }

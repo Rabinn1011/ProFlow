@@ -12,18 +12,38 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, Document {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const SALT_WORK_FACTOR = 10;
+export const MAX_NAME_LENGTH = 80;
+export const MIN_PASSWORD_LENGTH = 8;
+// bcrypt silently ignores everything past 72 bytes, so a longer "password" would give a
+// false sense of strength. Rejecting it is more honest than truncating it.
+export const MAX_PASSWORD_BYTES = 72;
+
+// 12 is the current OWASP-ish floor for bcrypt. Tests register hundreds of users, so they
+// use the minimum cost; the hashing code path is identical either way.
+const SALT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 4 : 12;
+
+// Login compares against this when the email is unknown, so "no such user" costs the same
+// bcrypt time as "wrong password" and response timing cannot be used to enumerate accounts.
+let dummyHash: Promise<string> | null = null;
+export const compareAgainstDummyHash = async (candidatePassword: string): Promise<false> => {
+  dummyHash ??= bcrypt.hash("timing-equaliser-not-a-real-password", SALT_WORK_FACTOR);
+  await bcrypt.compare(candidatePassword, await dummyHash);
+  return false;
+};
 
 const userSchema = new Schema<IUserDocument>(
   {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true, minlength: 6 },
+    name: { type: String, required: true, trim: true, maxlength: MAX_NAME_LENGTH },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, maxlength: 254 },
+    // select: false so no query can leak the hash by forgetting a projection; the login
+    // path opts in explicitly with .select("+password").
+    password: { type: String, required: true, minlength: MIN_PASSWORD_LENGTH, select: false },
     role: {
       type: String,
       enum: ["admin", "member", "viewer"],
