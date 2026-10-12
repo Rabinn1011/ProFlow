@@ -13,9 +13,11 @@ import { notFoundHandler } from "./middleware/not-found.middleware";
 const app = express();
 
 // Hosts like Render/Railway terminate TLS at a proxy; without this Express sees plain
-// http and req.protocol / req.ip are wrong.
+// http and req.protocol / req.ip are wrong. Trusting too many hops is just as bad: the
+// client could then spoof X-Forwarded-For and dodge every IP-keyed rate limiter. Override
+// with TRUST_PROXY if your host chains more than one proxy.
 if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
+  app.set("trust proxy", Number(process.env.TRUST_PROXY ?? 1));
 }
 
 // Security headers (HSTS, nosniff, frame-ancestors, no X-Powered-By, ...). This is a JSON
