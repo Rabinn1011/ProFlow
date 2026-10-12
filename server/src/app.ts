@@ -9,6 +9,7 @@ import workspacesRouter from "./routes/workspaces.routes";
 import { getAllowedOrigins } from "./config/cors";
 import { errorHandler } from "./middleware/error.middleware";
 import { notFoundHandler } from "./middleware/not-found.middleware";
+import { apiLimiter } from "./middleware/rate-limit.middleware";
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use("/api", apiLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/users", usersRouter);

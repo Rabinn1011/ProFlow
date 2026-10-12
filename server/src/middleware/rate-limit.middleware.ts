@@ -18,8 +18,11 @@ const baseOptions: Partial<Options> = {
 // actually under attack. ipKeyGenerator normalises IPv6 so a /64 cannot be used to get
 // unlimited distinct keys.
 const ipAndEmailKey = (req: Request): string => {
-  const { email } = (req.body ?? {}) as { email?: string };
-  return `${ipKeyGenerator(req.ip ?? "")}:${(email ?? "").trim().toLowerCase()}`;
+  const { email } = (req.body ?? {}) as { email?: unknown };
+  // The body is attacker-controlled: a non-string email must not throw here, or the
+  // limiter itself becomes the thing that breaks.
+  const normalized = typeof email === "string" ? email.trim().toLowerCase() : "";
+  return `${ipKeyGenerator(req.ip ?? "")}:${normalized}`;
 };
 
 // Targeted brute force: slow guessing against one specific account.
@@ -55,4 +58,15 @@ export const refreshLimiter = rateLimit({
   ...baseOptions,
   windowMs: 15 * 60 * 1000,
   limit: 60,
+});
+
+// Backstop for everything under /api. The auth limiters above guard credentials; this one
+// stops a single client (even a legitimate, logged-in one) from hammering the database,
+// e.g. scripting thousands of task creates or deletes. Sized so that dragging cards around
+// a busy board never gets near it.
+export const apiLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 5 * 60 * 1000,
+  limit: 600,
+  message: { message: "Too many requests. Please slow down." },
 });
