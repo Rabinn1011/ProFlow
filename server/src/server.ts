@@ -19,6 +19,9 @@ const startServer = async (): Promise<void> => {
         origin: getAllowedOrigins(),
         credentials: true,
       },
+      // Default is 1 MB per packet. The largest legitimate payload is a 2000-char chat
+      // message, so anything near the default is abuse.
+      maxHttpBufferSize: 16 * 1024,
     });
 
     registerSocketHandlers(io);
