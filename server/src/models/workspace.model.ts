@@ -31,7 +31,7 @@ const workspaceMemberSchema = new Schema<IWorkspaceMember>(
 
 const workspaceSchema = new Schema<IWorkspaceDocument>(
   {
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true, maxlength: 100 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     members: { type: [workspaceMemberSchema], default: [] },
   },

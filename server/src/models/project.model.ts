@@ -15,8 +15,8 @@ export interface IProjectDocument extends IProject, Document {
 const projectSchema = new Schema<IProjectDocument>(
   {
     workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true, index: true },
-    name: { type: String, required: true, trim: true },
-    description: { type: String, default: null, trim: true },
+    name: { type: String, required: true, trim: true, maxlength: 100 },
+    description: { type: String, default: null, trim: true, maxlength: 10000 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   },
   { timestamps: true },
