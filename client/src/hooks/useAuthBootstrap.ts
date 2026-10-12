@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { API_BASE_URL } from "../services/api";
+import { refreshAccessToken } from "../lib/authFetch";
 import { useAuthStore } from "../store/authStore";
-
-type RefreshResponse = { accessToken?: string };
 
 type MeResponse = {
   user?: {
@@ -26,13 +25,9 @@ export function useAuthBootstrap(): void {
 
     const restoreSession = async (): Promise<void> => {
       try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-          method: "POST",
-          credentials: "include",
-        });
-        if (!refreshResponse.ok) return;
-
-        const { accessToken } = (await refreshResponse.json()) as RefreshResponse;
+        // Shared with authFetch so StrictMode's double effect (or a racing request)
+        // cannot send the same rotating refresh cookie twice.
+        const accessToken = await refreshAccessToken();
         if (!accessToken) return;
 
         const meResponse = await fetch(`${API_BASE_URL}/users/me`, {

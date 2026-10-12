@@ -4,6 +4,7 @@ import type { RequestWithUser } from "../types/express";
 import { Workspace } from "../models/workspace.model";
 import { Project } from "../models/project.model";
 import { Task } from "../models/task.model";
+import { Message } from "../models/message.model";
 
 export const listWorkspaces = async (
   req: RequestWithUser,
@@ -150,11 +151,14 @@ export const deleteWorkspace = async (
       return;
     }
 
-    // Cascade: projects and tasks carry workspaceId, so deleting only the workspace
-    // would leave them orphaned and unreachable.
-    await Task.deleteMany({ workspaceId: workspace._id });
-    await Project.deleteMany({ workspaceId: workspace._id });
+    // Cascade: projects, tasks and chat carry workspaceId, so deleting only the workspace
+    // would leave them orphaned and unreachable. The parent goes first: if a later step
+    // fails, the leftovers are invisible garbage rather than a workspace that still shows
+    // up in the sidebar with half its data gone.
     await workspace.deleteOne();
+    await Project.deleteMany({ workspaceId: workspace._id });
+    await Task.deleteMany({ workspaceId: workspace._id });
+    await Message.deleteMany({ workspaceId: workspace._id });
 
     res.status(204).send();
   } catch (err) {

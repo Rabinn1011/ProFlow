@@ -41,6 +41,9 @@ Owners and admins get **analytics** on throughput and completion.
 ### Docker (everything, including a local Mongo)
 
 ```bash
+# One-time: the API refuses to start without two distinct random secrets.
+node -e "const r=()=>require('crypto').randomBytes(48).toString('hex');console.log('ACCESS_TOKEN_SECRET='+r()+'\nREFRESH_TOKEN_SECRET='+r())" > .env
+
 docker compose up --build
 ```
 

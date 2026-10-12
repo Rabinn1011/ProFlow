@@ -23,10 +23,11 @@ services:
       # Both halves are on localhost here, so the refresh cookie stays SameSite=Strict.
       # Set true when the client is served from a different domain than this API.
       COOKIE_CROSS_SITE: "false"
-      # Local-only defaults. Generate real values for anything reachable from outside:
+      # Required, no defaults: a placeholder secret checked into a public repo lets anyone
+      # forge a login for any user. Put both in a .env file next to this one (gitignored):
       #   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-dev-only-access-secret-change-me}
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-only-refresh-secret-change-me}
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:?Set ACCESS_TOKEN_SECRET in .env - see README}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:?Set REFRESH_TOKEN_SECRET in .env - see README}
       ACCESS_TOKEN_EXPIRES_IN_SECONDS: 900
       REFRESH_TOKEN_EXPIRES_IN_SECONDS: 604800
     ports:
