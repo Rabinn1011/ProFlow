@@ -1,6 +1,7 @@
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express from "express";
+import helmet from "helmet";
 import authRouter from "./routes/auth.routes";
 import healthRouter from "./routes/health.routes";
 import usersRouter from "./routes/users.routes";
@@ -16,6 +17,10 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+
+// Security headers (HSTS, nosniff, frame-ancestors, no X-Powered-By, ...). This is a JSON
+// API, so the default CSP, which forbids everything, is exactly right.
+app.use(helmet());
 
 app.use(
   cors({
