@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { login, logout, refresh, register } from "../controllers/auth.controller";
+import { login, logout, logoutAll, refresh, register } from "../controllers/auth.controller";
+import { requireAuth } from "../middleware/auth.middleware";
 import { requireTrustedOrigin } from "../middleware/csrf.middleware";
 import {
   loginLimiter,
@@ -20,5 +21,6 @@ authRouter.post("/login", loginLimiter, loginSprayLimiter, login);
 authRouter.post("/refresh", refreshLimiter, refresh);
 // Logout is deliberately unlimited: never make it hard for someone to end a session.
 authRouter.post("/logout", logout);
+authRouter.post("/logout-all", requireAuth, logoutAll);
 
 export default authRouter;
