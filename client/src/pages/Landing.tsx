@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { AuthLoadingScreen } from "../components/AuthLoadingScreen";
+import { SiteFooter } from "../components/SiteFooter";
 import heroImage from "../assets/hero.png";
 
 const FEATURES = [
@@ -171,19 +172,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-slate-500 sm:flex-row">
-          <span>ProFlow</span>
-          <a
-            href="https://github.com/Rabinn1011/ProFlow"
-            target="_blank"
-            rel="noreferrer"
-            className="transition hover:text-violet-700"
-          >
-            Source on GitHub
-          </a>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
