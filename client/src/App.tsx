@@ -15,6 +15,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const WorkspaceProjects = lazy(() => import("./pages/WorkspaceProjects"));
 const ProjectBoard = lazy(() => import("./pages/ProjectBoard"));
 const WorkspaceAnalytics = lazy(() => import("./pages/WorkspaceAnalytics"));
+// Long, rarely visited text: no reason to ship it with the landing page.
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 
 function App() {
   useAuthBootstrap();
@@ -26,6 +29,9 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Public for everyone, signed in or not, so no redirect like the landing page. */}
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/app" element={<Dashboard />} />
             <Route path="/app/workspaces/:workspaceId" element={<WorkspaceProjects />} />
