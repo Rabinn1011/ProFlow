@@ -10,17 +10,17 @@ export type Crumb = {
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb">
-      <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500">
+      <ol className="flex flex-wrap items-center gap-1 text-sm text-ink-muted">
         {items.map((item, index) => (
           <Fragment key={`${item.label}-${index}`}>
-            {index > 0 && <ChevronRight size={14} className="text-slate-300" />}
+            {index > 0 && <ChevronRight size={14} className="text-ink-faint" />}
             <li>
               {item.to ? (
-                <Link to={item.to} className="transition hover:text-violet-700">
+                <Link to={item.to} className="transition hover:text-ink">
                   {item.label}
                 </Link>
               ) : (
-                <span className="font-medium text-slate-700">{item.label}</span>
+                <span className="font-medium text-ink-soft">{item.label}</span>
               )}
             </li>
           </Fragment>

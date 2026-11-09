@@ -64,32 +64,32 @@ export function ChatPanel({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 animate-fade-in bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-40 !mt-0 flex justify-end">
+      <div className="absolute inset-0 animate-fade-in bg-ink/40 backdrop-blur-sm" onClick={onClose} />
 
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Project chat"
-        className="relative flex h-full w-full max-w-md animate-fade-in-up flex-col border-l border-slate-200 bg-white shadow-xl"
+        className="relative flex h-full w-full max-w-md animate-fade-in-up flex-col border-l border-line bg-surface shadow-xl"
       >
-        <header className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Chat</h2>
+        <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted">Chat</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close chat"
-            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg p-1.5 text-ink-faint transition hover:bg-sunken hover:text-ink-soft"
           >
             <X size={18} />
           </button>
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-4">
-          {isPending && <p className="text-sm text-slate-400">Loading messages...</p>}
+          {isPending && <p className="text-sm text-ink-faint">Loading messages...</p>}
 
           {isError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
               {errorMessage(error) ?? "Failed to load messages"}
             </div>
           )}
@@ -99,14 +99,14 @@ export function ChatPanel({
               type="button"
               onClick={() => void fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="mx-auto mb-3 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-violet-300 hover:text-violet-700 disabled:opacity-70"
+              className="mx-auto mb-3 rounded-full border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-ink-muted transition hover:border-ink/30 hover:text-ink disabled:opacity-70"
             >
               {isFetchingNextPage ? "Loading..." : "Load older messages"}
             </button>
           )}
 
           {!isPending && messages.length === 0 && (
-            <p className="my-auto text-center text-sm text-slate-400">
+            <p className="my-auto text-center text-sm text-ink-faint">
               No messages yet. Say something.
             </p>
           )}
@@ -123,28 +123,28 @@ export function ChatPanel({
               return (
                 <li key={message.id}>
                   {showDay && (
-                    <div className="my-3 text-center text-xs font-medium text-slate-400">
+                    <div className="my-3 text-center text-xs font-medium text-ink-faint">
                       {formatDay(message.createdAt)}
                     </div>
                   )}
                   <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[80%]">
                       {!isMine && (
-                        <div className="mb-1 text-xs font-semibold text-slate-500">
+                        <div className="mb-1 text-xs font-semibold text-ink-muted">
                           {message.author.name}
                         </div>
                       )}
                       <div
                         className={`rounded-2xl px-3 py-2 text-sm ${
                           isMine
-                            ? "bg-violet-600 text-white"
-                            : "border border-slate-200 bg-slate-50 text-slate-800"
+                            ? "bg-ink text-canvas"
+                            : "border border-line bg-canvas text-ink-soft"
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{message.body}</p>
                       </div>
                       <div
-                        className={`mt-1 text-[11px] text-slate-400 ${isMine ? "text-right" : ""}`}
+                        className={`mt-1 text-[11px] text-ink-faint ${isMine ? "text-right" : ""}`}
                       >
                         {formatTime(message.createdAt)}
                       </div>
@@ -158,7 +158,7 @@ export function ChatPanel({
           <div ref={bottomRef} />
         </div>
 
-        <footer className="border-t border-slate-200 px-5 py-4">
+        <footer className="border-t border-line px-5 py-4">
           <div className="flex items-end gap-2">
             <textarea
               rows={2}
@@ -173,19 +173,19 @@ export function ChatPanel({
               }}
               placeholder="Write a message..."
               aria-label="Message"
-              className="min-w-0 flex-1 resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+              className="min-w-0 flex-1 resize-none rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10"
             />
             <button
               type="button"
               onClick={submit}
               disabled={!draft.trim()}
               aria-label="Send message"
-              className="rounded-lg bg-violet-600 p-2.5 text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg bg-ink p-2.5 text-canvas shadow-sm transition hover:bg-ink-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Send size={18} />
             </button>
           </div>
-          <p className="mt-1.5 text-[11px] text-slate-400">Enter to send · Shift+Enter for a new line</p>
+          <p className="mt-1.5 text-[11px] text-ink-faint">Enter to send · Shift+Enter for a new line</p>
         </footer>
       </aside>
     </div>

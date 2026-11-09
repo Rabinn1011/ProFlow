@@ -83,54 +83,52 @@ export default function Register() {
   if (isAuthenticated) return <Navigate to="/app" replace />;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 text-slate-800">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_50%)]" />
-      <div className="absolute -left-20 top-24 h-56 w-56 rounded-full bg-violet-200/50 blur-3xl" />
-      <div className="absolute -right-16 bottom-16 h-56 w-56 rounded-full bg-purple-200/50 blur-3xl" />
-
-      <div className="relative w-full max-w-md animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-8 shadow-[0_20px_60px_-24px_rgba(139,92,246,0.35)]">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-canvas px-4 py-10 text-ink-soft">
+      <div className="relative w-full max-w-md animate-fade-in-up rounded-2xl border border-line bg-surface p-8 shadow-[0_20px_60px_-24px_rgba(17,17,17,0.18)]">
         <div className="mb-8">
-          <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-ink-muted">
             <UserPlus size={14} />
             ProFlow Workspace
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Create your account</h1>
-          <p className="mt-2 text-sm text-slate-600">Start managing projects and tasks with your team.</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.025em] text-ink">
+            Create your <em className="font-serif text-[1.08em] font-normal tracking-normal">account</em>
+          </h1>
+          <p className="mt-2 text-sm text-ink-muted">Start managing projects and tasks with your team.</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div>
-            <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="name" className="mb-2 block text-sm font-medium text-ink-soft">
               Full name
             </label>
             <div className="relative">
-              <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-violet-500" size={18} />
+              <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" size={18} />
               <input
                 id="name"
                 type="text"
                 autoComplete="name"
-                className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-                  errors.name ? "border-rose-400" : "border-slate-300"
+                className={`w-full rounded-lg border bg-surface py-2.5 pl-10 pr-3 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+                  errors.name ? "border-danger" : "border-line-strong"
                 }`}
                 placeholder="Ada Lovelace"
                 {...register("name", { required: "Name is required" })}
               />
             </div>
-            {errors.name && <p className="mt-1 text-xs text-rose-600">{errors.name.message}</p>}
+            {errors.name && <p className="mt-1 text-xs text-danger">{errors.name.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-ink-soft">
               Email address
             </label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-violet-500" size={18} />
+              <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" size={18} />
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-                  errors.email ? "border-rose-400" : "border-slate-300"
+                className={`w-full rounded-lg border bg-surface py-2.5 pl-10 pr-3 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+                  errors.email ? "border-danger" : "border-line-strong"
                 }`}
                 placeholder="you@company.com"
                 {...register("email", {
@@ -142,21 +140,21 @@ export default function Register() {
                 })}
               />
             </div>
-            {errors.email && <p className="mt-1 text-xs text-rose-600">{errors.email.message}</p>}
+            {errors.email && <p className="mt-1 text-xs text-danger">{errors.email.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="password" className="mb-2 block text-sm font-medium text-ink-soft">
               Password
             </label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-violet-500" size={18} />
+              <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" size={18} />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-                  errors.password ? "border-rose-400" : "border-slate-300"
+                className={`w-full rounded-lg border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+                  errors.password ? "border-danger" : "border-line-strong"
                 }`}
                 placeholder="Enter your password"
                 {...register("password", {
@@ -170,27 +168,27 @@ export default function Register() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-violet-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint transition hover:text-ink"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-xs text-rose-600">{errors.password.message}</p>}
+            {errors.password && <p className="mt-1 text-xs text-danger">{errors.password.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-ink-soft">
               Confirm password
             </label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-violet-500" size={18} />
+              <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" size={18} />
               <input
                 id="confirmPassword"
                 type= {showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-                  errors.confirmPassword ? "border-rose-400" : "border-slate-300"
+                className={`w-full rounded-lg border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+                  errors.confirmPassword ? "border-danger" : "border-line-strong"
                 }`}
                 placeholder="Confirm your password"
                 {...register("confirmPassword", {
@@ -201,19 +199,19 @@ export default function Register() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-violet-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint transition hover:text-ink"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-rose-600">{errors.confirmPassword.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.confirmPassword.message}</p>
             )}
           </div>
 
           {apiError && (
-            <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
               {apiError}
             </div>
           )}
@@ -221,15 +219,15 @@ export default function Register() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-canvas shadow-sm transition hover:bg-ink-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Signing up..." : "Sign up"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-ink-muted">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-violet-700 transition hover:text-violet-800">
+          <Link to="/login" className="font-semibold text-ink underline underline-offset-2 transition hover:text-ink-muted">
             Sign in
           </Link>
         </p>

@@ -145,7 +145,7 @@ export default function ProjectBoard() {
         <button
           type="button"
           onClick={() => setIsChatOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/30 hover:text-ink"
         >
           <MessageSquare size={16} />
           Chat
@@ -154,17 +154,17 @@ export default function ProjectBoard() {
     >
       <>
         {tasksQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(tasksQuery.error) ?? "Failed to load tasks"}
           </div>
         )}
         {createMutation.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(createMutation.error)}
           </div>
         )}
         {moveMutation.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(moveMutation.error) ?? "Failed to move task"} — the card was put back.
           </div>
         )}
@@ -174,7 +174,7 @@ export default function ProjectBoard() {
             {COLUMNS.map((column) => (
               <div
                 key={column.status}
-                className="h-64 animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+                className="h-64 animate-pulse rounded-2xl border border-line bg-sunken"
               />
             ))}
           </div>

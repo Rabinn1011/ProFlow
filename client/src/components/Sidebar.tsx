@@ -26,17 +26,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const linkClass = (isActive: boolean) =>
     `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
       isActive
-        ? "bg-violet-50 text-violet-700"
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        ? "bg-sunken text-ink"
+        : "text-ink-muted hover:bg-sunken hover:text-ink"
     }`;
 
   return (
-    <div className="flex h-full flex-col border-r border-slate-200 bg-white">
+    <div className="flex h-full flex-col border-r border-line bg-surface">
       <div className="px-5 py-5">
         <Link
           to="/app"
           onClick={onNavigate}
-          className="text-lg font-semibold tracking-tight text-slate-900"
+          className="text-lg font-semibold tracking-tight text-ink"
         >
           ProFlow
         </Link>
@@ -49,11 +49,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
 
         <div className="mt-5 flex items-center justify-between px-3">
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-ink-faint">
             Workspaces
           </span>
           {workspacesQuery.isPending && (
-            <span className="h-3 w-3 animate-spin rounded-full border border-slate-300 border-t-violet-500" />
+            <span className="h-3 w-3 animate-spin rounded-full border border-line-strong border-t-ink" />
           )}
         </div>
 
@@ -70,7 +70,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 >
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold ${
-                      isActive ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
+                      isActive ? "bg-ink text-canvas" : "bg-sunken text-ink-muted"
                     }`}
                     aria-hidden="true"
                   >
@@ -83,14 +83,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           })}
 
           {!workspacesQuery.isPending && workspaces.length === 0 && (
-            <li className="px-3 py-2 text-xs text-slate-400">No workspaces yet</li>
+            <li className="px-3 py-2 text-xs text-ink-faint">No workspaces yet</li>
           )}
         </ul>
 
         <Link
           to="/app"
           onClick={onNavigate}
-          className="mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-violet-700"
+          className="mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition hover:bg-sunken hover:text-ink"
         >
           <Plus size={16} />
           New workspace
@@ -99,7 +99,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         {/* Only surfaced once a workspace is open, and only to those allowed in. */}
         {active && hasAtLeastRole(activeRole, "admin") && (
           <>
-            <div className="mt-5 px-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+            <div className="mt-5 px-3 text-xs font-semibold uppercase tracking-widest text-ink-faint">
               {active.name}
             </div>
             <Link
@@ -122,24 +122,24 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </nav>
 
-      <div className="border-t border-slate-200 p-3">
+      <div className="border-t border-line p-3">
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
           <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken text-xs font-bold text-ink"
             aria-hidden="true"
           >
             {initials(user?.name ?? "")}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-slate-900">{user?.name}</div>
-            <div className="truncate text-xs text-slate-500">{user?.email}</div>
+            <div className="truncate text-sm font-medium text-ink">{user?.name}</div>
+            <div className="truncate text-xs text-ink-muted">{user?.email}</div>
           </div>
         </div>
 
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
+          className="mt-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition hover:bg-danger-soft hover:text-danger"
         >
           <LogOut size={16} />
           Sign out

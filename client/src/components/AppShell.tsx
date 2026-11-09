@@ -28,7 +28,7 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
   const parent = crumbs?.filter((crumb) => crumb.to).at(-1);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen bg-canvas text-ink-soft">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
         <Sidebar />
       </aside>
@@ -36,7 +36,7 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
       {isNavOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 animate-fade-in bg-slate-900/40 backdrop-blur-sm"
+            className="absolute inset-0 animate-fade-in bg-ink/40 backdrop-blur-sm"
             onClick={() => setIsNavOpen(false)}
           />
           <div className="relative h-full w-64 animate-fade-in-up">
@@ -45,7 +45,7 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
               type="button"
               onClick={() => setIsNavOpen(false)}
               aria-label="Close navigation"
-              className="absolute right-2 top-4 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="absolute right-2 top-4 rounded-lg p-1.5 text-ink-faint transition hover:bg-sunken hover:text-ink-soft"
             >
               <X size={18} />
             </button>
@@ -54,14 +54,14 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
       )}
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-start justify-between gap-4 px-4 py-4">
             <div className="flex min-w-0 items-start gap-2">
               <button
                 type="button"
                 onClick={() => setIsNavOpen(true)}
                 aria-label="Open navigation"
-                className="mt-0.5 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+                className="mt-0.5 rounded-lg p-1.5 text-ink-muted transition hover:bg-sunken hover:text-ink lg:hidden"
               >
                 <Menu size={18} />
               </button>
@@ -71,7 +71,7 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
                   to={parent.to}
                   aria-label={`Back to ${parent.label}`}
                   title={`Back to ${parent.label}`}
-                  className="mt-0.5 rounded-lg border border-slate-200 p-1.5 text-slate-500 transition hover:border-violet-300 hover:text-violet-700"
+                  className="mt-0.5 rounded-lg border border-line p-1.5 text-ink-muted transition hover:border-ink/30 hover:text-ink"
                 >
                   <ArrowLeft size={18} />
                 </Link>
@@ -79,7 +79,7 @@ export function AppShell({ title, crumbs, subtitle, actions, children }: AppShel
 
               <div className="min-w-0">
                 {crumbs && crumbs.length > 0 && <Breadcrumbs items={crumbs} />}
-                <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">
+                <h1 className="mt-1 truncate text-xl font-semibold tracking-tight text-ink">
                   {title}
                 </h1>
                 {subtitle}

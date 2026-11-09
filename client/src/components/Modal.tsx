@@ -18,19 +18,19 @@ export function Modal({ title, description, onClose, children }: ModalProps) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 !mt-0 flex items-center justify-center px-4">
       <div
-        className="absolute inset-0 animate-fade-in bg-slate-900/40 backdrop-blur-sm"
+        className="absolute inset-0 animate-fade-in bg-ink/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-md animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-24px_rgba(139,92,246,0.35)]"
+        className="relative w-full max-w-md animate-fade-in-up rounded-2xl border border-line bg-surface p-6 shadow-[0_20px_60px_-24px_rgba(17,17,17,0.18)]"
       >
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h2>
-        {description && <p className="mt-1 text-sm text-slate-600">{description}</p>}
+        <h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2>
+        {description && <p className="mt-1 text-sm text-ink-muted">{description}</p>}
         <div className="mt-5">{children}</div>
       </div>
     </div>

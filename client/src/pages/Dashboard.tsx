@@ -45,7 +45,7 @@ export default function Dashboard() {
     <AppShell
       title={user?.name ? `Welcome back, ${user.name.split(" ")[0]}` : "Dashboard"}
       subtitle={
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ink-muted">
           {workspaces.length === 0
             ? "Create a workspace to get started."
             : `${workspaces.length} workspace${workspaces.length === 1 ? "" : "s"}`}
@@ -55,7 +55,7 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => setDialog({ mode: "create" })}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-sm font-semibold text-canvas shadow-sm transition hover:bg-ink-hover active:scale-[0.98]"
         >
           <Plus size={16} />
           New workspace
@@ -64,7 +64,7 @@ export default function Dashboard() {
     >
       <>
         {workspacesQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(workspacesQuery.error) ?? "Failed to load workspaces"}
           </div>
         )}
@@ -73,7 +73,7 @@ export default function Dashboard() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {workspacesQuery.isPending &&
               [0, 1].map((key) => (
-                <div key={key} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+                <div key={key} className="h-24 animate-pulse rounded-xl border border-line bg-sunken" />
               ))}
 
             {!workspacesQuery.isPending &&
@@ -85,17 +85,17 @@ export default function Dashboard() {
                 return (
                   <div
                     key={workspace.id}
-                    className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+                    className="group rounded-xl border border-line bg-surface p-4 transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <Link to={`/app/workspaces/${workspace.id}`} className="min-w-0">
-                        <div className="truncate text-base font-semibold text-slate-900">{workspace.name}</div>
-                        <div className="mt-1 text-xs text-slate-400">
+                        <div className="truncate text-base font-semibold text-ink">{workspace.name}</div>
+                        <div className="mt-1 text-xs text-ink-faint">
                           {workspace.members.length} member{workspace.members.length === 1 ? "" : "s"}
                         </div>
                       </Link>
                       {role && (
-                        <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                        <span className="shrink-0 rounded-full bg-sunken px-2 py-0.5 text-xs font-semibold text-ink">
                           {role}
                         </span>
                       )}
@@ -107,7 +107,7 @@ export default function Dashboard() {
                           <button
                             type="button"
                             onClick={() => setDialog({ mode: "rename", workspace })}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-ink/30 hover:text-ink"
                           >
                             <Pencil size={14} />
                             Rename
@@ -117,7 +117,7 @@ export default function Dashboard() {
                           <button
                             type="button"
                             onClick={() => setDialog({ mode: "delete", workspace })}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-700"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-danger-line hover:text-danger"
                           >
                             <Trash2 size={14} />
                             Delete
@@ -133,7 +133,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setDialog({ mode: "create" })}
-                className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500 transition hover:border-violet-300 hover:text-violet-700 sm:col-span-2 lg:col-span-3"
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-surface p-8 text-sm text-ink-muted transition hover:border-ink/30 hover:text-ink sm:col-span-2 lg:col-span-3"
               >
                 <Plus size={20} />
                 Create your first workspace
