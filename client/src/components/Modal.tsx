@@ -18,7 +18,7 @@ export function Modal({ title, description, onClose, children }: ModalProps) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 !mt-0 flex items-center justify-center px-4">
       <div
         className="absolute inset-0 animate-fade-in bg-ink/40 backdrop-blur-sm"
         onClick={onClose}

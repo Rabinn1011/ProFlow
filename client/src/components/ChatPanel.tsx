@@ -64,7 +64,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end">
+    <div className="fixed inset-0 z-40 !mt-0 flex justify-end">
       <div className="absolute inset-0 animate-fade-in bg-ink/40 backdrop-blur-sm" onClick={onClose} />
 
       <aside
