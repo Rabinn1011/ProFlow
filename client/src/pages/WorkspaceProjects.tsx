@@ -59,7 +59,7 @@ export default function WorkspaceProjects() {
           {canDelete && (
             <Link
               to={`/app/workspaces/${workspaceId}/analytics`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/30 hover:text-ink"
             >
               <BarChart3 size={16} />
               Analytics
@@ -69,7 +69,7 @@ export default function WorkspaceProjects() {
             <button
               type="button"
               onClick={() => setDialog({ mode: "create" })}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-sm font-semibold text-canvas shadow-sm transition hover:bg-ink-hover active:scale-[0.98]"
             >
               <Plus size={16} />
               New project
@@ -80,39 +80,39 @@ export default function WorkspaceProjects() {
     >
       <>
         {workspaceQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(workspaceQuery.error) ?? "Failed to load workspace"}
           </div>
         )}
         {projectsQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(projectsQuery.error) ?? "Failed to load projects"}
           </div>
         )}
 
         <section className="animate-fade-in-up">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-ink-muted">
             Projects
           </h2>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projectsQuery.isPending &&
               [0, 1].map((key) => (
-                <div key={key} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+                <div key={key} className="h-24 animate-pulse rounded-xl border border-line bg-sunken" />
               ))}
 
             {!projectsQuery.isPending &&
               projects.map((project) => (
                 <div
                   key={project.id}
-                  className="rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+                  className="rounded-xl border border-line bg-surface p-4 transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-md"
                 >
                   <Link
                     to={`/app/workspaces/${workspaceId}/projects/${project.id}`}
                     className="block min-w-0"
                   >
-                    <div className="truncate text-base font-semibold text-slate-900">{project.name}</div>
-                    <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                    <div className="truncate text-base font-semibold text-ink">{project.name}</div>
+                    <p className="mt-1 line-clamp-2 text-sm text-ink-muted">
                       {project.description ?? "No description"}
                     </p>
                   </Link>
@@ -123,7 +123,7 @@ export default function WorkspaceProjects() {
                         <button
                           type="button"
                           onClick={() => setDialog({ mode: "edit", project })}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-ink/30 hover:text-ink"
                         >
                           <Pencil size={14} />
                           Edit
@@ -133,7 +133,7 @@ export default function WorkspaceProjects() {
                         <button
                           type="button"
                           onClick={() => setDialog({ mode: "delete", project })}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-700"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-danger-line hover:text-danger"
                         >
                           <Trash2 size={14} />
                           Delete
@@ -145,7 +145,7 @@ export default function WorkspaceProjects() {
               ))}
 
             {!projectsQuery.isPending && !projectsQuery.isError && projects.length === 0 && (
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-ink-muted">
                 {canEdit
                   ? "No projects yet. Create your first one to get started."
                   : "No projects in this workspace yet."}

@@ -86,7 +86,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           ProFlow uses a <strong>single, strictly necessary cookie</strong> called{" "}
-          <code className="rounded bg-slate-100 px-1 py-0.5 text-sm">refreshToken</code>. It
+          <code className="rounded bg-sunken px-1 py-0.5 text-sm">refreshToken</code>. It
           keeps you signed in between visits, is marked HttpOnly so page scripts cannot read
           it, is only sent to our sign-in endpoints, and expires after 7 days without use.
         </p>
