@@ -18,18 +18,22 @@ import { useAnalytics } from "../hooks/useAnalytics";
 import { getMyRole, hasAtLeastRole } from "../lib/workspaceRole";
 import { AppShell } from "../components/AppShell";
 
-// Validated with the dataviz palette checker (light surface): lightness band, chroma
-// floor, CVD separation (worst adjacent ΔE 23.2 deutan) and normal-vision floor all pass.
-// The amber sits below 3:1 contrast, so every mark using it carries a visible label.
+// Recharts needs literal colours, so these mirror the tokens in tailwind.config.js.
+// Status is an ordered workflow, so it is one warm ramp from light to ink. Validated with
+// the dataviz checker as an ordinal ramp on the surface colour. To do sits below 3:1
+// contrast, so the charts rely on the legend, tooltips and totals, not fill alone.
 const STATUS_COLORS = {
-  todo: "#f59e0b",
-  in_progress: "#8b5cf6",
-  done: "#059669",
+  todo: "#AFA184",
+  in_progress: "#6F6452",
+  done: "#111111",
 } as const;
 
-const LINE_COLOR = "#7c3aed";
-const GRID_COLOR = "#e2e8f0";
-const AXIS_TICK = { fill: "#64748b", fontSize: 12 };
+const SURFACE_COLOR = "#FBF8F2";
+const LINE_COLOR = "#111111";
+const GRID_COLOR = "#DED7C8";
+const LABEL_COLOR = "#5C574D";
+const CURSOR_FILL = "rgba(17,17,17,0.05)";
+const AXIS_TICK = { fill: LABEL_COLOR, fontSize: 12 };
 
 const RANGES = [7, 30, 90];
 
@@ -51,11 +55,11 @@ function StatTile({
   tone?: "default" | "warning";
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</div>
+    <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+      <div className="text-xs font-semibold uppercase tracking-widest text-ink-muted">{label}</div>
       <div
         className={`mt-2 text-3xl font-semibold tracking-tight ${
-          tone === "warning" && value > 0 ? "text-rose-600" : "text-slate-900"
+          tone === "warning" && value > 0 ? "text-danger" : "text-ink"
         }`}
       >
         {value}
@@ -74,9 +78,9 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">{title}</h2>
-      {subtitle && <p className="mt-1 text-xs text-slate-400">{subtitle}</p>}
+    <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted">{title}</h2>
+      {subtitle && <p className="mt-1 text-xs text-ink-faint">{subtitle}</p>}
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -84,8 +88,9 @@ function ChartCard({
 
 const tooltipStyle = {
   borderRadius: "0.75rem",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 10px 30px -12px rgba(15,23,42,0.25)",
+  backgroundColor: SURFACE_COLOR,
+  border: `1px solid ${GRID_COLOR}`,
+  boxShadow: "0 10px 30px -12px rgba(17,17,17,0.25)",
   fontSize: "0.8125rem",
 };
 
@@ -118,14 +123,14 @@ export default function WorkspaceAnalytics() {
       ]}
       actions={
         <div className="flex items-center gap-2">
-          <label htmlFor="range" className="text-xs font-medium text-slate-500">
+          <label htmlFor="range" className="text-xs font-medium text-ink-muted">
             Range
           </label>
           <select
             id="range"
             value={days}
             onChange={(event) => setDays(Number(event.target.value))}
-            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+            className="rounded-lg border border-line-strong bg-surface px-2 py-1.5 text-sm font-semibold text-ink-soft outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10"
           >
             {RANGES.map((value) => (
               <option key={value} value={value}>
@@ -138,20 +143,20 @@ export default function WorkspaceAnalytics() {
     >
       <>
         {analyticsQuery.isError && (
-          <div className="animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {errorMessage(analyticsQuery.error) ?? "Failed to load analytics"}
           </div>
         )}
 
         {analyticsQuery.isPending ? (
           <div className="grid gap-4">
-            <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-slate-100" />
-            <div className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-2xl border border-line bg-sunken" />
+            <div className="h-72 animate-pulse rounded-2xl border border-line bg-sunken" />
           </div>
         ) : !data ? null : !hasTasks ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-            <h2 className="text-base font-semibold text-slate-900">Nothing to measure yet</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+          <div className="rounded-2xl border border-dashed border-line-strong bg-surface p-10 text-center">
+            <h2 className="text-base font-semibold text-ink">Nothing to measure yet</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">
               Create some tasks and the charts will fill in.
             </p>
           </div>
@@ -199,7 +204,7 @@ export default function WorkspaceAnalytics() {
                     stroke={LINE_COLOR}
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 4, strokeWidth: 2, stroke: "#ffffff" }}
+                    activeDot={{ r: 4, strokeWidth: 2, stroke: SURFACE_COLOR }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -207,7 +212,7 @@ export default function WorkspaceAnalytics() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <ChartCard title="Tasks by project" subtitle="Split by status">
-                <div className="mb-3 flex flex-wrap gap-3 text-xs text-slate-600">
+                <div className="mb-3 flex flex-wrap gap-3 text-xs text-ink-muted">
                   {(
                     [
                       ["To do", STATUS_COLORS.todo],
@@ -248,15 +253,15 @@ export default function WorkspaceAnalytics() {
                       axisLine={false}
                       width={110}
                     />
-                    <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(148,163,184,0.12)" }} />
-                    <Bar dataKey="todo" name="To do" stackId="s" fill={STATUS_COLORS.todo} stroke="#ffffff" strokeWidth={2} barSize={18} />
-                    <Bar dataKey="in_progress" name="In progress" stackId="s" fill={STATUS_COLORS.in_progress} stroke="#ffffff" strokeWidth={2} barSize={18} />
+                    <Tooltip contentStyle={tooltipStyle} cursor={{ fill: CURSOR_FILL }} />
+                    <Bar dataKey="todo" name="To do" stackId="s" fill={STATUS_COLORS.todo} stroke={SURFACE_COLOR} strokeWidth={2} barSize={18} />
+                    <Bar dataKey="in_progress" name="In progress" stackId="s" fill={STATUS_COLORS.in_progress} stroke={SURFACE_COLOR} strokeWidth={2} barSize={18} />
                     <Bar
                       dataKey="done"
                       name="Done"
                       stackId="s"
                       fill={STATUS_COLORS.done}
-                      stroke="#ffffff"
+                      stroke={SURFACE_COLOR}
                       strokeWidth={2}
                       barSize={18}
                       radius={[0, 4, 4, 0]}
@@ -265,7 +270,7 @@ export default function WorkspaceAnalytics() {
                         dataKey="total"
                         position="right"
                         offset={8}
-                        style={{ fill: "#475569", fontSize: 12, fontWeight: 600 }}
+                        style={{ fill: LABEL_COLOR, fontSize: 12, fontWeight: 600 }}
                       />
                     </Bar>
                   </BarChart>
@@ -274,7 +279,7 @@ export default function WorkspaceAnalytics() {
 
               <ChartCard title="Throughput" subtitle="Completed tasks, attributed by assignee">
                 {data.throughput.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-slate-400">No completed tasks yet.</p>
+                  <p className="py-8 text-center text-sm text-ink-faint">No completed tasks yet.</p>
                 ) : (
                   <ResponsiveContainer
                     width="100%"
@@ -303,7 +308,7 @@ export default function WorkspaceAnalytics() {
                       />
                       <Tooltip
                         contentStyle={tooltipStyle}
-                        cursor={{ fill: "rgba(148,163,184,0.12)" }}
+                        cursor={{ fill: CURSOR_FILL }}
                         formatter={(value) => [Number(value ?? 0), "Completed"] as [number, string]}
                       />
                       <Bar
@@ -317,7 +322,7 @@ export default function WorkspaceAnalytics() {
                           dataKey="completed"
                           position="right"
                           offset={8}
-                          style={{ fill: "#475569", fontSize: 12, fontWeight: 600 }}
+                          style={{ fill: LABEL_COLOR, fontSize: 12, fontWeight: 600 }}
                         />
                       </Bar>
                     </BarChart>
