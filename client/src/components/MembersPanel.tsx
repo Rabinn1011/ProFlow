@@ -59,18 +59,18 @@ export function MembersPanel({
   const members = membersQuery.data ?? [];
 
   return (
-    <section className="animate-fade-in-up rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Members</h2>
+    <section className="animate-fade-in-up rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted">Members</h2>
 
       {membersQuery.isError && (
-        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div className="mt-3 rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
           {errorMessage(membersQuery.error) ?? "Failed to load members"}
         </div>
       )}
 
-      <ul className="mt-4 divide-y divide-slate-100">
+      <ul className="mt-4 divide-y divide-line">
         {membersQuery.isPending && (
-          <li className="h-12 animate-pulse rounded-lg bg-slate-100" aria-hidden="true" />
+          <li className="h-12 animate-pulse rounded-lg bg-sunken" aria-hidden="true" />
         )}
 
         {members.map((member) => {
@@ -80,11 +80,11 @@ export function MembersPanel({
           return (
             <li key={member.userId} className="flex items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-slate-900">
+                <div className="truncate text-sm font-medium text-ink">
                   {member.name}
-                  {isSelf && <span className="ml-1.5 text-xs font-normal text-slate-400">(you)</span>}
+                  {isSelf && <span className="ml-1.5 text-xs font-normal text-ink-faint">(you)</span>}
                 </div>
-                <div className="truncate text-xs text-slate-500">{member.email}</div>
+                <div className="truncate text-xs text-ink-muted">{member.email}</div>
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
@@ -99,7 +99,7 @@ export function MembersPanel({
                         role: event.target.value as WorkspaceRole,
                       })
                     }
-                    className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 disabled:opacity-70"
+                    className="rounded-lg border border-line-strong bg-surface px-2 py-1.5 text-xs font-semibold text-ink-soft outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 disabled:opacity-70"
                   >
                     {ROLES.filter((role) => roleRank[role] <= roleRank[myRole ?? "viewer"]).map(
                       (role) => (
@@ -110,7 +110,7 @@ export function MembersPanel({
                     )}
                   </select>
                 ) : (
-                  <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                  <span className="rounded-full bg-sunken px-2 py-0.5 text-xs font-semibold text-ink">
                     {member.role}
                   </span>
                 )}
@@ -120,7 +120,7 @@ export function MembersPanel({
                     type="button"
                     onClick={() => setPendingRemoval(member)}
                     aria-label={`Remove ${member.name}`}
-                    className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-500 transition hover:border-rose-300 hover:text-rose-700"
+                    className="rounded-lg border border-line-strong bg-surface p-1.5 text-ink-muted transition hover:border-danger-line hover:text-danger"
                   >
                     <UserMinus size={14} />
                   </button>
@@ -132,7 +132,7 @@ export function MembersPanel({
       </ul>
 
       {(roleMutation.isError || removeMutation.isError) && (
-        <div className="mt-3 animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div className="mt-3 animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
           {errorMessage(roleMutation.error) ?? errorMessage(removeMutation.error)}
         </div>
       )}
@@ -146,9 +146,9 @@ export function MembersPanel({
             ),
           )}
           noValidate
-          className="mt-5 border-t border-slate-100 pt-5"
+          className="mt-5 border-t border-line pt-5"
         >
-          <label htmlFor="invite-email" className="mb-2 block text-sm font-medium text-slate-700">
+          <label htmlFor="invite-email" className="mb-2 block text-sm font-medium text-ink-soft">
             Invite a teammate
           </label>
           <div className="flex flex-wrap gap-2">
@@ -157,8 +157,8 @@ export function MembersPanel({
               type="email"
               autoComplete="off"
               placeholder="teammate@company.com"
-              className={`min-w-0 flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-                errors.email ? "border-rose-400" : "border-slate-300"
+              className={`min-w-0 flex-1 rounded-lg border bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+                errors.email ? "border-danger" : "border-line-strong"
               }`}
               {...register("email", {
                 required: "Email is required",
@@ -170,7 +170,7 @@ export function MembersPanel({
             />
             <select
               aria-label="Role for the new member"
-              className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+              className="rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm font-semibold text-ink-soft outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10"
               {...register("role")}
             >
               {ROLES.filter((role) => roleRank[role] <= roleRank[myRole ?? "viewer"]).map((role) => (
@@ -182,22 +182,22 @@ export function MembersPanel({
             <button
               type="submit"
               disabled={addMutation.isPending}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-sm font-semibold text-canvas shadow-sm transition hover:bg-ink-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
               <UserPlus size={16} />
               {addMutation.isPending ? "Adding..." : "Add"}
             </button>
           </div>
 
-          {errors.email && <p className="mt-1 text-xs text-rose-600">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-xs text-danger">{errors.email.message}</p>}
 
           {addMutation.isError && (
-            <div className="mt-3 animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="mt-3 animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
               {errorMessage(addMutation.error)}
             </div>
           )}
 
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-ink-faint">
             They need a ProFlow account already — invites by email are not sent yet.
           </p>
         </form>

@@ -5,9 +5,9 @@ const VARIANTS: Record<
   ToastVariant,
   { icon: typeof CheckCircle2; ring: string; iconColor: string }
 > = {
-  success: { icon: CheckCircle2, ring: "border-emerald-200", iconColor: "text-emerald-600" },
-  error: { icon: AlertCircle, ring: "border-rose-200", iconColor: "text-rose-600" },
-  info: { icon: Info, ring: "border-violet-200", iconColor: "text-violet-600" },
+  success: { icon: CheckCircle2, ring: "border-success-line", iconColor: "text-success" },
+  error: { icon: AlertCircle, ring: "border-danger-line", iconColor: "text-danger" },
+  info: { icon: Info, ring: "border-line-strong", iconColor: "text-ink" },
 };
 
 export function ToastViewport() {
@@ -29,15 +29,15 @@ export function ToastViewport() {
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 rounded-xl border ${ring} animate-fade-in-up bg-white px-4 py-3 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.4)]`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-xl border ${ring} animate-fade-in-up bg-surface px-4 py-3 shadow-[0_16px_40px_-20px_rgba(17,17,17,0.28)]`}
           >
             <Icon size={18} className={`mt-0.5 shrink-0 ${iconColor}`} />
-            <p className="min-w-0 flex-1 text-sm text-slate-800">{toast.message}</p>
+            <p className="min-w-0 flex-1 text-sm text-ink-soft">{toast.message}</p>
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
               aria-label="Dismiss notification"
-              className="-mr-1 shrink-0 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="-mr-1 shrink-0 rounded-md p-1 text-ink-faint transition hover:bg-sunken hover:text-ink-soft"
             >
               <X size={14} />
             </button>

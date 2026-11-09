@@ -35,20 +35,20 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
           onClick();
         }
       }}
-      className={`w-full rounded-xl border bg-white p-3 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 ${
+      className={`w-full rounded-xl border bg-surface p-3 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
         isDragging
-          ? "border-violet-400 shadow-lg"
-          : "border-slate-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+          ? "border-ink shadow-lg"
+          : "border-line hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-md"
       }`}
     >
-      <div className="text-sm font-medium text-slate-900">{task.title}</div>
+      <div className="text-sm font-medium text-ink">{task.title}</div>
 
       {(task.dueDate || assigneeName) && (
         <div className="mt-2 flex items-center justify-between gap-2">
           {task.dueDate ? (
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                overdue ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
+                overdue ? "bg-danger-soft text-danger" : "bg-sunken text-ink-muted"
               }`}
             >
               <CalendarDays size={12} />
@@ -62,7 +62,7 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
             <span
               title={assigneeName}
               aria-label={`Assigned to ${assigneeName}`}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-[10px] font-bold text-violet-700"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sunken text-[10px] font-bold text-ink"
             >
               {initials(assigneeName)}
             </span>

@@ -52,7 +52,7 @@ export function ProjectFormModal({
         )}
         noValidate
       >
-        <label htmlFor="project-name" className="mb-2 block text-sm font-medium text-slate-700">
+        <label htmlFor="project-name" className="mb-2 block text-sm font-medium text-ink-soft">
           Project name
         </label>
         <input
@@ -60,8 +60,8 @@ export function ProjectFormModal({
           type="text"
           autoFocus
           autoComplete="off"
-          className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 ${
-            errors.name ? "border-rose-400" : "border-slate-300"
+          className={`w-full rounded-lg border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10 ${
+            errors.name ? "border-danger" : "border-line-strong"
           }`}
           placeholder="Website redesign"
           {...register("name", {
@@ -70,29 +70,29 @@ export function ProjectFormModal({
             validate: (value) => value.trim().length > 0 || "Project name is required",
           })}
         />
-        {errors.name && <p className="mt-1 text-xs text-rose-600">{errors.name.message}</p>}
+        {errors.name && <p className="mt-1 text-xs text-danger">{errors.name.message}</p>}
 
         <label
           htmlFor="project-description"
-          className="mb-2 mt-4 block text-sm font-medium text-slate-700"
+          className="mb-2 mt-4 block text-sm font-medium text-ink-soft"
         >
-          Description <span className="font-normal text-slate-400">(optional)</span>
+          Description <span className="font-normal text-ink-faint">(optional)</span>
         </label>
         <textarea
           id="project-description"
           rows={3}
-          className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+          className="w-full resize-none rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10"
           placeholder="What is this project for?"
           {...register("description", {
             maxLength: { value: 400, message: "Keep it under 400 characters" },
           })}
         />
         {errors.description && (
-          <p className="mt-1 text-xs text-rose-600">{errors.description.message}</p>
+          <p className="mt-1 text-xs text-danger">{errors.description.message}</p>
         )}
 
         {error && (
-          <div className="mt-4 animate-fade-in rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mt-4 animate-fade-in rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
             {error}
           </div>
         )}
@@ -102,14 +102,14 @@ export function ProjectFormModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-full border border-line-strong bg-surface px-4 py-2 text-sm font-semibold text-ink-soft transition hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-70"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-canvas shadow-sm transition hover:bg-ink-hover active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPending ? pendingLabel : submitLabel}
           </button>
